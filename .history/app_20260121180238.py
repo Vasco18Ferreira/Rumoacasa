@@ -791,11 +791,7 @@ def ui_arrendar_estrategia():
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown("<h3>📊 Comparar aquisição</h3>", unsafe_allow_html=True)
-
-    st.caption(
-        "💡 No RumoCasa, a comparação prioriza a mensalidade — "
-        "porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia."
-    )
+    st.caption("Comparação direta entre Comprar e Construir (aquisição). Arrendar é tratado como fase estratégica, não como “vencedor”.")
 
     upfront_buy   = float(st.session_state.get("upfront_buy", 0.0))
     upfront_build = float(st.session_state.get("entrada_build", 0.0))
@@ -803,11 +799,10 @@ def ui_comparar():
     mensal_build  = float(st.session_state.get("mensal_build", 0.0))
 
     if mensal_buy <= 0 and mensal_build <= 0:
-        st.info("Preenche **Comprar** e/ou **Construir** para veres a comparação.")
+        st.info("Preenche Comprar e/ou Construir para veres a comparação.")
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    # --- KPIs ---
     col1, col2 = st.columns(2)
     with col1:
         st.metric("À cabeça (comprar)", euro0(upfront_buy))
@@ -816,33 +811,13 @@ def ui_comparar():
         st.metric("À cabeça (construir)", euro0(upfront_build))
         st.metric("Mensal (construir)", euro0(mensal_build))
 
-    # --- Determinar vencedor pela mensalidade ---
-    winner = None
-    diff = None
     if mensal_buy > 0 and mensal_build > 0:
-        if mensal_buy < mensal_build:
-            winner = "Comprar"
-            diff = mensal_build - mensal_buy
-        else:
-            winner = "Construir"
-            diff = mensal_buy - mensal_build
-
-        # intensidade (0 a 1) baseada na diferença relativa
-        # exemplo: diferença de 10% = 0.10 → começa a “pintar” mais
-        base = max(mensal_buy, mensal_build)
-        rel = (diff / base) if base > 0 else 0.0
-        intensity = min(max(rel, 0.15), 0.85)  # clamp p/ ficar bonito
+        melhor = "Comprar" if mensal_buy < mensal_build else "Construir"
+        melhor_val = min(mensal_buy, mensal_build)
 
         st.markdown("#### 🏆 Resultado (mensalidade)")
-        st.success(
-            f"Mais leve no orçamento mensal: **{winner}**  "
-            f"(diferença ~ {euro0(diff)}/mês)"
-        )
-    else:
-        # se só existe 1 opção preenchida, mantém neutro
-        intensity = 0.35
+        st.success(f"Mais leve no orçamento mensal: **{melhor}**  ({euro0(melhor_val)}/mês)")
 
-    # --- Dados para o gráfico ---
     data = []
     if mensal_buy > 0:
         data.append({"Opção": "Comprar", "Mensal (€)": mensal_buy})
@@ -850,32 +825,16 @@ def ui_comparar():
         data.append({"Opção": "Construir", "Mensal (€)": mensal_build})
 
     df = pd.DataFrame(data)
-
-    # Cor dinâmica: vencedor verde, perdedor cinza
-    # Intensidade ajusta a opacidade do verde (quanto mais “compensa”, mais forte)
-    green = f"rgba(15, 81, 50, {intensity:.2f})"
-    gray  = "rgba(107, 114, 128, 0.35)"
-
-    if winner:
-        df["Cor"] = df["Opção"].apply(lambda x: green if x == winner else gray)
-    else:
-        df["Cor"] = "rgba(15, 81, 50, 0.35)"  # neutro quando só há uma opção
-
     chart = (
         alt.Chart(df)
-        .mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6)
+        .mark_bar()
         .encode(
             x=alt.X("Opção:N", sort=None),
             y=alt.Y("Mensal (€):Q"),
-            color=alt.Color("Cor:N", scale=None, legend=None),
-            tooltip=[
-                alt.Tooltip("Opção:N"),
-                alt.Tooltip("Mensal (€):Q", format=",.0f"),
-            ],
+            tooltip=["Opção", "Mensal (€)"],
         )
         .properties(height=260)
     )
-
     st.altair_chart(chart, use_container_width=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
