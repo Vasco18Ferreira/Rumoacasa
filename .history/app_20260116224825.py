@@ -6,151 +6,14 @@ import csv
 import pandas as pd
 import altair as alt
 
-# ================================
-# COPY PREMIUM (PT) — RumoCasa
-# ================================
-COPY = {
-    "app_title": "RumoCasa 🏡 Planeador Habitacional",
-    "app_tagline": "O planeador inteligente para a tua decisão de habitação.",
-
-    "hero_title": "🏠 RumoCasa",
-    "hero_subtitle": "O planeador inteligente para a tua decisão de habitação.",
-    "hero_body": (
-        "Decide com números — não com achismos. "
-        "Compara Comprar, Construir ou Arrendar estrategicamente, percebe a entrada necessária, "
-        "a prestação mensal e o impacto real dos juros antes de tomar decisões."
-    ),
-
-    "section_simular_title": "📊 O que queres simular?",
-    "section_simular_body": (
-        "Escolhe o cenário que estás a considerar e vê, de forma clara: "
-        "quanto precisas à cabeça, quanto vais pagar todos os meses e o custo real ao longo do tempo. "
-        "O RumoCasa ajuda-te a transformar uma decisão emocional numa decisão informada."
-    ),
-
-    "layout_label": "Disposição",
-    "layout_opt_cols": "Colunas lado a lado",
-    "layout_opt_tabs": "Abas separadas",
-
-    "kpi_bar_hint": (
-        "💡 Estes valores são estimativos e servem como apoio à decisão — "
-        "não substituem propostas formais de instituições financeiras."
-    ),
-
-    "buy_title": "🏡 Comprar casa",
-    "buy_body": (
-        "Simula a compra de um imóvel já construído e percebe: "
-        "o impacto do preço na entrada e na prestação, os custos associados à compra "
-        "e a viabilidade do crédito no teu orçamento."
-    ),
-    "buy_link_label": "URL do anúncio (casa) (opcional)",
-    "buy_link_help": "Podes colar o URL de um anúncio para facilitar a simulação.",
-
-    "build_title": "🏗️ Construir casa",
-    "build_body": (
-        "Avalia um projeto de construção desde a base: custo do terreno, sistema construtivo, "
-        "área útil e custo estimado por m². Percebe se construir é realmente mais vantajoso "
-        "ou apenas parece à primeira vista."
-    ),
-    "build_link_label": "URL do anúncio (terreno) (opcional)",
-    "build_link_help": "Opcional. Se tiveres o link do terreno, cola aqui para referência.",
-
-    "rent_title": "🏘️ Arrendar como estratégia",
-    "rent_body": (
-        "Arrendar não é “deitar dinheiro fora” — pode ser uma fase estratégica. "
-        "Aqui consegues comparar o custo do arrendamento, simular poupança mensal "
-        "e perceber quanto tempo precisas para atingir a entrada ideal."
-    ),
-
-    "sens_title": "📈 Sensibilidade & cenários",
-    "sens_body": "Testa variações de taxa, preço e prazo e vê como pequenas mudanças alteram o resultado final.",
-
-    "save_title": "💰 Plano de poupança",
-    "save_body": (
-        "Simula quanto precisas de poupar por mês para atingir a entrada desejada, "
-        "reduzir o valor do crédito e melhorar condições futuras."
-    ),
-
-    "partners_title": "🤝 Parceiros relevantes",
-    "partners_body": "Versão demo. Aqui poderás ligar parceiros reais (crédito / construção / mediação) ao teu cenário.",
-
-    "export_hint": "📥 Exporta e partilha o teu cenário (CSV) para discutir com bancos, parceiros ou família.",
-
-    "disclaimer": (
-        "⚠️ Nota: MVP educativo. Não constitui aconselhamento financeiro. "
-        "Valores e taxas podem variar por banco, perfil e condições."
-    ),
-
-    "closing": (
-        "🎯 Uma casa é uma decisão de vida. "
-        "O RumoCasa ajuda-te a decidir com clareza, segurança e visão de longo prazo."
-    ),
-}
-
 # -------------------------------------------------
 # CONFIG DA PÁGINA
 # -------------------------------------------------
 st.set_page_config(
-    page_title=COPY["app_title"],
+    page_title="RumoCasa – Planeador Habitacional",
     page_icon="🏡",
     layout="centered",
 )
-
-st.markdown("""
-<style>
-
-/* ===== FORÇAR TEMA CLARO (ignorar dark mode do sistema) ===== */
-
-html, body, .stApp {
-    background-color: #f5f5f7 !important;
-    color: #111827 !important;
-}
-
-/* Cards principais */
-.section-card {
-    background: #ffffff !important;
-    color: #111827 !important;
-}
-
-/* Títulos */
-h1, h2, h3, h4, h5 {
-    color: #0f172a !important;
-}
-
-/* Texto secundário / descrições */
-p, span, label {
-    color: #374151 !important;
-}
-
-/* Captions do Streamlit */
-[data-testid="stCaptionContainer"] p {
-    color: #4b5563 !important;
-}
-
-/* Inputs */
-input, textarea, select {
-    background-color: #ffffff !important;
-    color: #111827 !important;
-}
-
-/* Métricas */
-[data-testid="metric-container"] {
-    background-color: #ffffff !important;
-    color: #111827 !important;
-    border-radius: 14px;
-}
-
-/* Remover influência do dark mode do SO */
-@media (prefers-color-scheme: dark) {
-    html, body, .stApp {
-        background-color: #f5f5f7 !important;
-        color: #111827 !important;
-    }
-}
-
-</style>
-""", unsafe_allow_html=True)
-
 
 # -------------------------------------------------
 # ESTILO GLOBAL RUMOCASA
@@ -172,11 +35,6 @@ st.markdown(
     --rc-gray-100:     #f3f4f6;
 
     --rc-bg:           #f5f5f7;
-}
-
-html, body, .stApp {
-    background-color: var(--rc-bg) !important;
-    color: var(--rc-gray-900) !important;
 }
 
 .stApp { background-color: var(--rc-bg); }
@@ -238,8 +96,7 @@ html, body, .stApp {
 }
 
 .section-card {
-    background: #FFFFFF !important;
-    color: var(--rc-gray-900) !important;
+    background: #FFFFFF;
     border-radius: 18px;
     padding: 1.75rem;
     border: 1px solid #E5E7EB;
@@ -300,8 +157,6 @@ html, body, .stApp {
     border: 1px solid #d1d5db;
     padding: 6px 10px;
     font-size: 0.95rem;
-    background: #ffffff !important;
-    color: var(--rc-gray-900) !important;
 }
 
 .stTextInput > div > div > input:focus,
@@ -331,8 +186,7 @@ html, body, .stApp {
 }
 
 [data-testid="metric-container"] {
-    background: #FFFFFF !important;
-    color: var(--rc-gray-900) !important;
+    background: #FFFFFF;
     padding: 12px;
     border-radius: 12px;
     border: 1px solid #E5E7EB;
@@ -362,9 +216,45 @@ html, body, .stApp {
     font-weight: 700;
 }
 
-[data-testid="stCaptionContainer"] p {
-    color: var(--rc-gray-900) !important;
-    font-size: 0.95rem !important;
+@media (prefers-color-scheme: dark) {
+    :root {
+        --rc-bg:         #020617;
+        --rc-gray-900:   #e5e7eb;
+        --rc-gray-800:   #e5e7eb;
+        --rc-gray-700:   #9ca3af;
+        --rc-gray-500:   #9ca3af;
+        --rc-gray-200:   #1f2937;
+        --rc-gray-100:   #111827;
+        --rc-green-soft: rgba(34, 197, 94, 0.15);
+    }
+
+    .stApp { background-color: #020617; }
+    .section-card {
+        background: #0b1220;
+        border-color: #1f2937;
+        box-shadow: 0 22px 55px rgba(0,0,0,0.65);
+    }
+    .rc-main-card {
+        background: linear-gradient(180deg, rgba(11,18,32,1) 0%, rgba(11,18,32,0.96) 100%);
+        border-top-color: rgba(45, 212, 191, 0.9);
+    }
+    .rc-tagline {
+        background: #0b1220;
+        color: #e5e7eb;
+        box-shadow: 0 6px 22px rgba(0,0,0,0.65);
+    }
+    .rc-logo-text {
+        background: linear-gradient(90deg, #6ee7b7, #22c55e);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    .subtitle { color: #cbd5e1; }
+    [data-testid="metric-container"] {
+        background: #0b1220;
+        border-color: #1f2937;
+    }
+    .rc-sticky-inner { background: rgba(22, 163, 74, 0.96); }
 }
 </style>
 """,
@@ -492,33 +382,23 @@ def ui_sticky_summary(container):
 # Toggle UI
 # -------------------------------------------------
 st.markdown("<div class='section-card' style='padding: 1rem 1.25rem; margin-top: -0.75rem;'>", unsafe_allow_html=True)
-modo_ui = st.radio(
-    COPY["layout_label"],
-    [COPY["layout_opt_cols"], COPY["layout_opt_tabs"]],
-    horizontal=True,
-)
+modo_ui = st.radio("Disposição", ["Colunas lado a lado", "Abas separadas"], horizontal=True, key="ui_modo")
+st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
 # Secção COMPRAR
 # ================================
 def ui_comprar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-
-    st.markdown(f"### {COPY['buy_title']}")
-    st.caption(COPY["buy_body"])
+    st.markdown("<h3>🏠 Comprar</h3>", unsafe_allow_html=True)
 
     colL, colR = st.columns(2)
-
     with colL:
-        # ✅ O widget já guarda sozinho em st.session_state por causa do key=
-        url_casa = st.text_input(
-            COPY["buy_link_label"],
-            help=COPY["buy_link_help"],
-            key=K("comprar", "url_casa"),
-        )
+        st.caption("Link do anúncio (opcional)")
+        url_casa = st.text_input("URL do anúncio (casa)", value=st.session_state.get(K("comprar", "url_casa"), ""), key=K("comprar", "url_input"))
+        st.session_state[K("comprar", "url_casa")] = url_casa
 
         preco_guess = guess_price_from_url(url_casa) if url_casa else None
-
         preco_casa = st.number_input(
             "Preço da casa (€)",
             step=1000,
@@ -526,24 +406,15 @@ def ui_comprar():
             value=int(preco_guess or ss_get(K("comprar", "preco_casa"), 200_000)),
             key=K("comprar", "preco_casa_input"),
         )
-
-        # (opcional) guardar um “espelho” sem key — isto não dá conflito
         st.session_state[K("comprar", "preco_casa")] = preco_casa
 
     with colR:
         st.caption("Perfil do imóvel")
-        tipo_imovel = st.selectbox(
-            "Tipo de imóvel",
-            ["Habitação Própria Permanente", "Secundária"],
-            key=K("comprar", "tipo_imovel"),
-            index=0
-        )
+        tipo_imovel = st.selectbox("Tipo de imóvel", ["Habitação Própria Permanente", "Secundária"], key=K("comprar", "tipo_imovel"), index=0)
         _ = st.checkbox("Imóvel novo (IVA incluído)", key=K("comprar", "novo"))
 
     st.divider()
-
     colA, colB, colC = st.columns(3)
-
     with colA:
         entrada_pct = st.number_input(
             "% Entrada",
@@ -595,23 +466,9 @@ def ui_comprar():
     prestacao = calc_prestacao(financiado, taeg_anual, prazo_anos)
 
     colX, colY = st.columns(2)
-
     with colX:
-        condo = st.number_input(
-            "Condomínio / Manutenção (€/mês)",
-            min_value=0.0,
-            value=float(ss_get(K("comprar", "condo"), 0.0)),
-            step=5.0,
-            key=K("comprar", "condo_input"),
-        )
-        seguros = st.number_input(
-            "Seguros (€/mês)",
-            min_value=0.0,
-            value=float(ss_get(K("comprar", "seguros"), 0.0)),
-            step=5.0,
-            key=K("comprar", "seguros_input"),
-        )
-
+        condo = st.number_input("Condomínio / Manutenção (€/mês)", min_value=0.0, value=float(ss_get(K("comprar","condo"), 0.0)), step=5.0, key=K("comprar","condo_input"))
+        seguros = st.number_input("Seguros (€/mês)", min_value=0.0, value=float(ss_get(K("comprar","seguros"), 0.0)), step=5.0, key=K("comprar","seguros_input"))
     with colY:
         st.caption("💡 Dica: custos mensais “pequenos” (condomínio/seguros) mudam a realidade do orçamento.")
 
@@ -619,23 +476,19 @@ def ui_comprar():
     upfront_buy = float(entrada) + float(custos_compra)
 
     col1, col2 = st.columns(2)
-
     with col1:
         st.metric("Entrada necessária (entrada + impostos/custos)", euro0(upfront_buy))
-        st.caption(
-            f"IMT 2025: {euro0(imt)} | Selo: {euro0(selo)} | Escritura/registos (est.): {euro0(outros_custos)}"
-        )
-
+        st.caption(f"IMT 2025: {euro0(imt)} | Selo: {euro0(selo)} | Escritura/registos (est.): {euro0(outros_custos)}")
     with col2:
         st.metric("Prestação (crédito)", euro0(prestacao))
         st.metric("Mensal total (com custos)", euro0(mensal_compra))
 
-    st.session_state["upfront_buy"] = float(upfront_buy)
+    st.session_state["upfront_buy"]   = float(upfront_buy)
     st.session_state["mensal_compra"] = float(mensal_compra)
-    st.session_state["financiado"] = float(financiado)
-    st.session_state["condo"] = float(condo)
-    st.session_state["seguros"] = float(seguros)
-    st.session_state["imt_2025"] = float(imt)
+    st.session_state["financiado"]    = float(financiado)
+    st.session_state["condo"]         = float(condo)
+    st.session_state["seguros"]       = float(seguros)
+    st.session_state["imt_2025"]      = float(imt)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -649,7 +502,7 @@ def ui_construir():
     colL, colR = st.columns(2)
     with colL:
         st.caption("Link do anúncio (terreno) (opcional)")
-        url_terreno = st.text_input(COPY["build_link_label"], help=COPY["build_link_help"])
+        url_terreno = st.text_input("URL do anúncio (terreno)", value=ss_get(K("construir", "url_terreno"), ""), key=K("construir", "url_terreno_input"))
         st.session_state[K("construir", "url_terreno")] = url_terreno
 
         preco_terreno = st.number_input("Preço do terreno (€)", step=1000, min_value=0, value=int(ss_get(K("construir", "preco_terreno"), 50_000)), key=K("construir", "preco_terreno_input"))
@@ -723,12 +576,8 @@ def ui_construir():
 # Secção ARRENDAR
 # ================================
 def ui_arrendar():
-    st.markdown(f"### {COPY['rent_title']}")
-    st.markdown(
-    f"<p style='color: var(--rc-gray-900); font-size: 0.95rem; line-height: 1.5; margin-top: -6px;'>"
-    f"{COPY['rent_body']}</p>",
-    unsafe_allow_html=True
-)
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.markdown("<h3>🔑 Arrendar</h3>", unsafe_allow_html=True)
 
     colL, colR = st.columns(2)
     with colL:
@@ -745,8 +594,6 @@ def ui_arrendar():
 # ================================
 # Arrendar como fase estratégica (copy premium)
 # ================================
-import textwrap
-
 def ui_arrendar_estrategia():
     renda = float(st.session_state.get("renda", 0.0))
     poup_mensal = float(st.session_state.get("poupanca_mensal", 0.0))
@@ -762,27 +609,25 @@ def ui_arrendar_estrategia():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown("<h3>🧭 Arrendar como fase estratégica</h3>", unsafe_allow_html=True)
 
-    html = f"""
-<p style="margin:.65rem 0 .35rem 0; font-weight:600; color: var(--rc-gray-900);">
-  Arrendar é uma fase estratégica — não um erro.
-</p>
+    st.markdown(
+        f"""
+        <p style="margin:0 0 .35rem 0;">
+          <b>Arrendar não entra no “mais vantajoso”</b> porque não é aquisição.
+          O que interessa aqui é: <b>quanto consegues preparar para a entrada</b> enquanto manténs flexibilidade.
+        </p>
 
-<p style="margin:.15rem 0 .65rem 0; color: var(--rc-gray-800);">
-  <b>Arrendar não entra no “mais vantajoso”</b> porque não é aquisição.
-  O que interessa aqui é: <b>quanto consegues preparar para a entrada</b> enquanto manténs flexibilidade.
-</p>
+        <p style="margin:.65rem 0 .35rem 0;">
+          <span style="font-weight:700;">Cenário:</span>
+          renda <b>{euro0(renda)}/mês</b> + poupança <b>{euro0(poup_mensal)}/mês</b> durante <b>{anos} anos</b>
+          → podes acumular cerca de <b>{euro0(saldo_final)}</b> para a entrada.
+        </p>
 
-<p style="margin:.65rem 0 .35rem 0; color: var(--rc-gray-800);">
-  <span style="font-weight:700;">Cenário:</span>
-  renda <b>{euro0(renda)}/mês</b> + poupança <b>{euro0(poup_mensal)}/mês</b> durante <b>{anos} anos</b>
-  → podes acumular cerca de <b>{euro0(saldo_final)}</b> para a entrada.
-</p>
-
-<p style="margin:.35rem 0 0 0; color: #6B7280; font-size: 0.92rem;">
-  Nota: ajusta a poupança mensal à tua realidade. O objetivo é transformar “arrendar” num plano com direção.
-</p>
-"""
-    st.markdown(textwrap.dedent(html), unsafe_allow_html=True)
+        <p style="margin:.35rem 0 0 0; color: #6B7280; font-size: 0.92rem;">
+          Nota: ajusta a poupança mensal à tua realidade. O objetivo é transformar “arrendar” num plano com direção.
+        </p>
+        """,
+        unsafe_allow_html=True,
+    )
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
@@ -843,8 +688,9 @@ def ui_comparar():
 # Sensibilidade de juros (compra)
 # ================================
 def ui_sensibilidade():
-    st.markdown(f"### {COPY['sens_title']}")
-    st.caption(COPY["sens_body"])
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.markdown("<h3>📈 Sensibilidade aos juros</h3>", unsafe_allow_html=True)
+    st.caption("Como muda a prestação se a taxa subir ou descer 1 ponto percentual (pp).")
 
     financiado = float(st.session_state.get("financiado", 0.0))
     taeg_base = float(st.session_state.get("taeg_anual", 0.04))
@@ -945,8 +791,9 @@ def payment_to_goal(goal, a0, months, annual_rate):
     return max(0.0, (goal - a0 * A) * r / (A - 1))
 
 def ui_poupanca():
-    st.markdown(f"### {COPY['save_title']}")
-    st.caption(COPY["save_body"])
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.markdown("<h3>📊 Progresso rumo à entrada</h3>", unsafe_allow_html=True)
+    st.caption("Percebe o que já tens, o que falta, e como um plano consistente pode encurtar o caminho.")
 
     goal_buy = float(st.session_state.get("upfront_buy", 0.0))
     goal_build = float(st.session_state.get("entrada_build", 0.0))
@@ -1099,8 +946,9 @@ def parceiros(perfil: dict, horiz: int = 36) -> list[dict]:
     return cards
 
 def ui_parceiros():
-    st.markdown(f"### {COPY['partners_title']}")
-    st.caption(COPY["partners_body"])
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.markdown("<h3>🤝 Parceiros relevantes</h3>", unsafe_allow_html=True)
+    st.caption("Versão demo. Aqui podes ligar parceiros reais (crédito / construção / mediação) ao teu cenário.")
 
     perfil = {
         "comprar": True,
@@ -1142,7 +990,7 @@ def ui_parceiros():
 # -------------------------------------------------
 # RENDER (ordem lógica)
 # -------------------------------------------------
-if modo_ui == COPY["layout_opt_cols"]:
+if modo_ui == "Colunas lado a lado":
     col_comp, col_constr = st.columns(2)
     with col_comp:
         ui_comprar()
@@ -1167,9 +1015,10 @@ ui_parceiros()
 
 ui_sticky_summary(sticky_placeholder)
 
-st.markdown("---")
-st.caption(COPY["disclaimer"])
-st.markdown(f"**{COPY['closing']}**")
+st.caption(
+    "MVP educativo: alguns cálculos estão simplificados. "
+    "Próximas versões: escalões IMT completos/atualizáveis, importação de anúncio e dados oficiais."
+)
 
 
 

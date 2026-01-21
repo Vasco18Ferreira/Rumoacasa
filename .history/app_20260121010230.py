@@ -745,8 +745,6 @@ def ui_arrendar():
 # ================================
 # Arrendar como fase estratégica (copy premium)
 # ================================
-import textwrap
-
 def ui_arrendar_estrategia():
     renda = float(st.session_state.get("renda", 0.0))
     poup_mensal = float(st.session_state.get("poupanca_mensal", 0.0))
@@ -762,28 +760,23 @@ def ui_arrendar_estrategia():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown("<h3>🧭 Arrendar como fase estratégica</h3>", unsafe_allow_html=True)
 
-    html = f"""
-<p style="margin:.65rem 0 .35rem 0; font-weight:600; color: var(--rc-gray-900);">
-  Arrendar é uma fase estratégica — não um erro.
-</p>
+st.markdown(
+    f"""
+**Arrendar é uma fase estratégica — não um erro.**
 
-<p style="margin:.15rem 0 .65rem 0; color: var(--rc-gray-800);">
-  <b>Arrendar não entra no “mais vantajoso”</b> porque não é aquisição.
-  O que interessa aqui é: <b>quanto consegues preparar para a entrada</b> enquanto manténs flexibilidade.
-</p>
+Arrendar não entra no **“mais vantajoso”** porque não é aquisição.  
+O que interessa aqui é: **quanto consegues preparar para a entrada** enquanto manténs flexibilidade.
 
-<p style="margin:.65rem 0 .35rem 0; color: var(--rc-gray-800);">
-  <span style="font-weight:700;">Cenário:</span>
-  renda <b>{euro0(renda)}/mês</b> + poupança <b>{euro0(poup_mensal)}/mês</b> durante <b>{anos} anos</b>
-  → podes acumular cerca de <b>{euro0(saldo_final)}</b> para a entrada.
-</p>
-
-<p style="margin:.35rem 0 0 0; color: #6B7280; font-size: 0.92rem;">
-  Nota: ajusta a poupança mensal à tua realidade. O objetivo é transformar “arrendar” num plano com direção.
-</p>
+**Cenário:**  
+renda **{euro0(renda)}/mês** + poupança **{euro0(poup_mensal)}/mês** durante **{anos} anos**  
+→ podes acumular cerca de **{euro0(saldo_final)}** para a entrada.
 """
-    st.markdown(textwrap.dedent(html), unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+)
+
+st.caption(
+    "Nota: ajusta a poupança mensal à tua realidade. "
+    "O objetivo é transformar “arrendar” num plano com direção."
+)
 
 # ================================
 # Comparar (apenas aquisição)

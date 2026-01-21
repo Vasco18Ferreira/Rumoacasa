@@ -174,11 +174,6 @@ st.markdown(
     --rc-bg:           #f5f5f7;
 }
 
-html, body, .stApp {
-    background-color: var(--rc-bg) !important;
-    color: var(--rc-gray-900) !important;
-}
-
 .stApp { background-color: var(--rc-bg); }
 
 .main .block-container {
@@ -238,8 +233,7 @@ html, body, .stApp {
 }
 
 .section-card {
-    background: #FFFFFF !important;
-    color: var(--rc-gray-900) !important;
+    background: #FFFFFF;
     border-radius: 18px;
     padding: 1.75rem;
     border: 1px solid #E5E7EB;
@@ -300,8 +294,6 @@ html, body, .stApp {
     border: 1px solid #d1d5db;
     padding: 6px 10px;
     font-size: 0.95rem;
-    background: #ffffff !important;
-    color: var(--rc-gray-900) !important;
 }
 
 .stTextInput > div > div > input:focus,
@@ -331,8 +323,7 @@ html, body, .stApp {
 }
 
 [data-testid="metric-container"] {
-    background: #FFFFFF !important;
-    color: var(--rc-gray-900) !important;
+    background: #FFFFFF;
     padding: 12px;
     border-radius: 12px;
     border: 1px solid #E5E7EB;
@@ -362,6 +353,34 @@ html, body, .stApp {
     font-weight: 700;
 }
 
+    .stApp { background-color: #020617; }
+    .section-card {
+        background: #0b1220;
+        border-color: #1f2937;
+        box-shadow: 0 22px 55px rgba(0,0,0,0.65);
+    }
+    .rc-main-card {
+        background: linear-gradient(180deg, rgba(11,18,32,1) 0%, rgba(11,18,32,0.96) 100%);
+        border-top-color: rgba(45, 212, 191, 0.9);
+    }
+    .rc-tagline {
+        background: #0b1220;
+        color: #e5e7eb;
+        box-shadow: 0 6px 22px rgba(0,0,0,0.65);
+    }
+    .rc-logo-text {
+        background: linear-gradient(90deg, #6ee7b7, #22c55e);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    .subtitle { color: #cbd5e1; }
+    [data-testid="metric-container"] {
+        background: #0b1220;
+        border-color: #1f2937;
+    }
+    .rc-sticky-inner { background: rgba(22, 163, 74, 0.96); }
+}
 [data-testid="stCaptionContainer"] p {
     color: var(--rc-gray-900) !important;
     font-size: 0.95rem !important;
@@ -745,8 +764,6 @@ def ui_arrendar():
 # ================================
 # Arrendar como fase estratégica (copy premium)
 # ================================
-import textwrap
-
 def ui_arrendar_estrategia():
     renda = float(st.session_state.get("renda", 0.0))
     poup_mensal = float(st.session_state.get("poupanca_mensal", 0.0))
@@ -762,27 +779,31 @@ def ui_arrendar_estrategia():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown("<h3>🧭 Arrendar como fase estratégica</h3>", unsafe_allow_html=True)
 
-    html = f"""
-<p style="margin:.65rem 0 .35rem 0; font-weight:600; color: var(--rc-gray-900);">
+    st.markdown(
+        f"""
+        <p style="
+  margin:.65rem 0 .35rem 0;
+  font-weight:600;
+  color: var(--rc-gray-1000);
+">
   Arrendar é uma fase estratégica — não um erro.
 </p>
+          <b>Arrendar não entra no “mais vantajoso”</b> porque não é aquisição.
+          O que interessa aqui é: <b>quanto consegues preparar para a entrada</b> enquanto manténs flexibilidade.
+        </p>
 
-<p style="margin:.15rem 0 .65rem 0; color: var(--rc-gray-800);">
-  <b>Arrendar não entra no “mais vantajoso”</b> porque não é aquisição.
-  O que interessa aqui é: <b>quanto consegues preparar para a entrada</b> enquanto manténs flexibilidade.
-</p>
+        <p style="margin:.65rem 0 .35rem 0;">
+          <span style="font-weight:700;">Cenário:</span>
+          renda <b>{euro0(renda)}/mês</b> + poupança <b>{euro0(poup_mensal)}/mês</b> durante <b>{anos} anos</b>
+          → podes acumular cerca de <b>{euro0(saldo_final)}</b> para a entrada.
+        </p>
 
-<p style="margin:.65rem 0 .35rem 0; color: var(--rc-gray-800);">
-  <span style="font-weight:700;">Cenário:</span>
-  renda <b>{euro0(renda)}/mês</b> + poupança <b>{euro0(poup_mensal)}/mês</b> durante <b>{anos} anos</b>
-  → podes acumular cerca de <b>{euro0(saldo_final)}</b> para a entrada.
-</p>
-
-<p style="margin:.35rem 0 0 0; color: #6B7280; font-size: 0.92rem;">
-  Nota: ajusta a poupança mensal à tua realidade. O objetivo é transformar “arrendar” num plano com direção.
-</p>
-"""
-    st.markdown(textwrap.dedent(html), unsafe_allow_html=True)
+        <p style="margin:.35rem 0 0 0; color: #6B7280; font-size: 0.92rem;">
+          Nota: ajusta a poupança mensal à tua realidade. O objetivo é transformar “arrendar” num plano com direção.
+        </p>
+        """,
+        unsafe_allow_html=True,
+    )
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================

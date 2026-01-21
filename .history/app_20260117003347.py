@@ -96,62 +96,6 @@ st.set_page_config(
     layout="centered",
 )
 
-st.markdown("""
-<style>
-
-/* ===== FORÇAR TEMA CLARO (ignorar dark mode do sistema) ===== */
-
-html, body, .stApp {
-    background-color: #f5f5f7 !important;
-    color: #111827 !important;
-}
-
-/* Cards principais */
-.section-card {
-    background: #ffffff !important;
-    color: #111827 !important;
-}
-
-/* Títulos */
-h1, h2, h3, h4, h5 {
-    color: #0f172a !important;
-}
-
-/* Texto secundário / descrições */
-p, span, label {
-    color: #374151 !important;
-}
-
-/* Captions do Streamlit */
-[data-testid="stCaptionContainer"] p {
-    color: #4b5563 !important;
-}
-
-/* Inputs */
-input, textarea, select {
-    background-color: #ffffff !important;
-    color: #111827 !important;
-}
-
-/* Métricas */
-[data-testid="metric-container"] {
-    background-color: #ffffff !important;
-    color: #111827 !important;
-    border-radius: 14px;
-}
-
-/* Remover influência do dark mode do SO */
-@media (prefers-color-scheme: dark) {
-    html, body, .stApp {
-        background-color: #f5f5f7 !important;
-        color: #111827 !important;
-    }
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-
 # -------------------------------------------------
 # ESTILO GLOBAL RUMOCASA
 # -------------------------------------------------
@@ -172,11 +116,6 @@ st.markdown(
     --rc-gray-100:     #f3f4f6;
 
     --rc-bg:           #f5f5f7;
-}
-
-html, body, .stApp {
-    background-color: var(--rc-bg) !important;
-    color: var(--rc-gray-900) !important;
 }
 
 .stApp { background-color: var(--rc-bg); }
@@ -238,8 +177,7 @@ html, body, .stApp {
 }
 
 .section-card {
-    background: #FFFFFF !important;
-    color: var(--rc-gray-900) !important;
+    background: #FFFFFF;
     border-radius: 18px;
     padding: 1.75rem;
     border: 1px solid #E5E7EB;
@@ -300,8 +238,6 @@ html, body, .stApp {
     border: 1px solid #d1d5db;
     padding: 6px 10px;
     font-size: 0.95rem;
-    background: #ffffff !important;
-    color: var(--rc-gray-900) !important;
 }
 
 .stTextInput > div > div > input:focus,
@@ -331,8 +267,7 @@ html, body, .stApp {
 }
 
 [data-testid="metric-container"] {
-    background: #FFFFFF !important;
-    color: var(--rc-gray-900) !important;
+    background: #FFFFFF;
     padding: 12px;
     border-radius: 12px;
     border: 1px solid #E5E7EB;
@@ -362,9 +297,45 @@ html, body, .stApp {
     font-weight: 700;
 }
 
-[data-testid="stCaptionContainer"] p {
-    color: var(--rc-gray-900) !important;
-    font-size: 0.95rem !important;
+@media (prefers-color-scheme: dark) {
+    :root {
+        --rc-bg:         #020617;
+        --rc-gray-900:   #e5e7eb;
+        --rc-gray-800:   #e5e7eb;
+        --rc-gray-700:   #9ca3af;
+        --rc-gray-500:   #9ca3af;
+        --rc-gray-200:   #1f2937;
+        --rc-gray-100:   #111827;
+        --rc-green-soft: rgba(34, 197, 94, 0.15);
+    }
+
+    .stApp { background-color: #020617; }
+    .section-card {
+        background: #0b1220;
+        border-color: #1f2937;
+        box-shadow: 0 22px 55px rgba(0,0,0,0.65);
+    }
+    .rc-main-card {
+        background: linear-gradient(180deg, rgba(11,18,32,1) 0%, rgba(11,18,32,0.96) 100%);
+        border-top-color: rgba(45, 212, 191, 0.9);
+    }
+    .rc-tagline {
+        background: #0b1220;
+        color: #e5e7eb;
+        box-shadow: 0 6px 22px rgba(0,0,0,0.65);
+    }
+    .rc-logo-text {
+        background: linear-gradient(90deg, #6ee7b7, #22c55e);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    .subtitle { color: #cbd5e1; }
+    [data-testid="metric-container"] {
+        background: #0b1220;
+        border-color: #1f2937;
+    }
+    .rc-sticky-inner { background: rgba(22, 163, 74, 0.96); }
 }
 </style>
 """,
@@ -724,11 +695,7 @@ def ui_construir():
 # ================================
 def ui_arrendar():
     st.markdown(f"### {COPY['rent_title']}")
-    st.markdown(
-    f"<p style='color: var(--rc-gray-900); font-size: 0.95rem; line-height: 1.5; margin-top: -6px;'>"
-    f"{COPY['rent_body']}</p>",
-    unsafe_allow_html=True
-)
+    st.caption(COPY["rent_body"])
 
     colL, colR = st.columns(2)
     with colL:
@@ -745,8 +712,6 @@ def ui_arrendar():
 # ================================
 # Arrendar como fase estratégica (copy premium)
 # ================================
-import textwrap
-
 def ui_arrendar_estrategia():
     renda = float(st.session_state.get("renda", 0.0))
     poup_mensal = float(st.session_state.get("poupanca_mensal", 0.0))
@@ -762,27 +727,31 @@ def ui_arrendar_estrategia():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown("<h3>🧭 Arrendar como fase estratégica</h3>", unsafe_allow_html=True)
 
-    html = f"""
-<p style="margin:.65rem 0 .35rem 0; font-weight:600; color: var(--rc-gray-900);">
+    st.markdown(
+        f"""
+        <p style="
+  margin:.65rem 0 .35rem 0;
+  font-weight:600;
+  color: var(--rc-gray-800);
+">
   Arrendar é uma fase estratégica — não um erro.
 </p>
+          <b>Arrendar não entra no “mais vantajoso”</b> porque não é aquisição.
+          O que interessa aqui é: <b>quanto consegues preparar para a entrada</b> enquanto manténs flexibilidade.
+        </p>
 
-<p style="margin:.15rem 0 .65rem 0; color: var(--rc-gray-800);">
-  <b>Arrendar não entra no “mais vantajoso”</b> porque não é aquisição.
-  O que interessa aqui é: <b>quanto consegues preparar para a entrada</b> enquanto manténs flexibilidade.
-</p>
+        <p style="margin:.65rem 0 .35rem 0;">
+          <span style="font-weight:700;">Cenário:</span>
+          renda <b>{euro0(renda)}/mês</b> + poupança <b>{euro0(poup_mensal)}/mês</b> durante <b>{anos} anos</b>
+          → podes acumular cerca de <b>{euro0(saldo_final)}</b> para a entrada.
+        </p>
 
-<p style="margin:.65rem 0 .35rem 0; color: var(--rc-gray-800);">
-  <span style="font-weight:700;">Cenário:</span>
-  renda <b>{euro0(renda)}/mês</b> + poupança <b>{euro0(poup_mensal)}/mês</b> durante <b>{anos} anos</b>
-  → podes acumular cerca de <b>{euro0(saldo_final)}</b> para a entrada.
-</p>
-
-<p style="margin:.35rem 0 0 0; color: #6B7280; font-size: 0.92rem;">
-  Nota: ajusta a poupança mensal à tua realidade. O objetivo é transformar “arrendar” num plano com direção.
-</p>
-"""
-    st.markdown(textwrap.dedent(html), unsafe_allow_html=True)
+        <p style="margin:.35rem 0 0 0; color: #6B7280; font-size: 0.92rem;">
+          Nota: ajusta a poupança mensal à tua realidade. O objetivo é transformar “arrendar” num plano com direção.
+        </p>
+        """,
+        unsafe_allow_html=True,
+    )
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
