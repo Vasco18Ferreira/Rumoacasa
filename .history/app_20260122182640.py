@@ -721,6 +721,7 @@ def ui_construir():
         )
         st.session_state[K("construir", "preco_terreno")] = preco_terreno
 
+
     with colR:
         estrutura = st.selectbox(
             "Sistema construtivo",

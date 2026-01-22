@@ -699,12 +699,12 @@ def ui_comprar():
 # ================================
 def ui_construir():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.markdown(f"### {COPY['build_title']}")
-    st.caption(COPY["build_body"])
+    st.markdown("<h3>🏗️ Construir</h3>", unsafe_allow_html=True)
 
     colL, colR = st.columns(2)
 
     with colL:
+        # Link do terreno (opcional)
         url_terreno = st.text_input(
             COPY["build_link_label"],
             help=TIPS["url_terreno"],
