@@ -381,25 +381,6 @@ html, body, .stApp {
     border: 1px solid #E5E7EB;
 }
 
-/* Garantir texto e ícone do Download sempre visíveis */
-.stDownloadButton > button,
-[data-testid="stDownloadButton"] button {
-    color: #ffffff !important;
-}
-
-/* Ícone SVG dentro do botão */
-.stDownloadButton > button svg,
-[data-testid="stDownloadButton"] button svg {
-    fill: #ffffff !important;
-    stroke: #ffffff !important;
-}
-
-/* Qualquer elemento interno (span, p, etc.) */
-.stDownloadButton > button * ,
-[data-testid="stDownloadButton"] button * {
-    color: #ffffff !important;
-}
-
 .rc-sticky-summary { margin-bottom: 1rem; }
 .rc-sticky-inner {
     display: flex;
