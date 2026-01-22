@@ -88,46 +88,38 @@ COPY = {
 }
 
 TIPS = {
-    # ====================
     # Comprar
-    # ====================
-    "url_casa": "Cola aqui o link do anúncio (Idealista/Imovirtual, etc.). Serve para referência (e para automatismos futuros).",
-    "preco_casa": "Preço do imóvel (valor do anúncio). É a base para entrada, IMT e cálculo da prestação.",
-    "tipo_imovel": "HPP = Habitação Própria Permanente (IMT geralmente mais baixo). Secundária = férias/investimento (IMT mais alto).",
-    "novo": "Marca se é imóvel novo (contexto). No MVP não altera o IMT, mas pode ser útil para custos/IVA noutras contas.",
-    "entrada_pct": "Percentagem do preço paga com capitais próprios. Mais entrada = menos crédito e (em regra) prestação mais baixa.",
-    "taeg": "TAEG inclui juros + comissões + seguros. É o indicador mais útil para comparar propostas de bancos.",
-    "prazo": "Prazo do crédito. Mais prazo baixa a prestação, mas aumenta o total pago em juros.",
-    "poup_atual": "Quanto tens disponível para a entrada. (Sugestão: não misturar com fundo de emergência.)",
-    "condo": "Custos fixos mensais (condomínio/manutenção). Pequenos valores acumulam e mexem no orçamento.",
-    "seguros": "Seguros associados ao crédito (vida/habitação). Podem variar muito e alterar a mensalidade real.",
+    "url_casa": "Cola aqui o link do anúncio (Idealista/Imovirtual, etc.). Se o RumoCasa conseguir, tenta sugerir o preço.",
+    "preco_casa": "Preço do imóvel (o valor do anúncio). É a base para entrada, IMT e cálculo da prestação.",
+    "tipo_imovel": "HPP = Habitação Própria Permanente (impostos geralmente mais baixos). Secundária = casa de férias/investimento.",
+    "novo": "Marca se o imóvel é novo e tem IVA incluído no preço (útil para contexto; não altera IMT).",
+    "entrada_pct": "Percentagem do preço que pagas com capitais próprios. Mais entrada = menos crédito e (em regra) prestação mais baixa.",
+    "taeg": "TAEG é o custo 'mais honesto' do crédito: juros + comissões + seguros. Serve para comparar bancos.",
+    "prazo": "Número de anos do crédito. Mais prazo baixa a prestação, mas aumenta o total pago em juros.",
+    "poup_atual": "Quanto já tens disponível para a entrada (podes excluir fundo de emergência se não quiseres tocar nele).",
+    "condo": "Custos fixos mensais do imóvel (condomínio/manutenção). Parece pequeno, mas pesa no orçamento.",
+    "seguros": "Seguros associados (vida/habitação). Em muitos bancos são obrigatórios e podem variar bastante.",
 
-    # ====================
-    # Construir (chaves a bater com o teu código novo)
-    # ====================
+    # Construir
     "url_terreno": "Link do anúncio do terreno (opcional). Serve só para referência.",
-    "preco_terreno": "Preço de compra do terreno. Muitas vezes é pago antes da obra ou no início do processo.",
-    "estrutura": "Convencional, LSF ou Modular/3E. Muda custo, tempo e risco. Este simulador é estimativo.",
-    "area_m2": "Área útil estimada da casa (m²). Quanto maior, maior tende a ser o custo total.",
-    "custo_m2": "Estimativa do custo base por m². Varia por acabamentos, zona, mão de obra e projeto.",
-    "iva_reduzido": "Aplica IVA reduzido (ex.: 6%) apenas quando o teu caso se enquadra. Confirma com técnico/contabilista.",
-    "imprevistos_pct": "Margem para derrapagens (recomendado 10–20%). Construção raramente fecha a 100% do orçamento inicial.",
-    "projetos_lic": "Arquitetura/engenharias/licenças/termos. Depende do município e complexidade do projeto.",
-    "fiscalizacao": "Fiscalização/coordenação. Ajuda a evitar erros caros e derrapagens na obra.",
-    "entrada_pct_build": "Percentagem do total do projeto paga com capitais próprios. (Bancos podem libertar em tranches.)",
-    "cond_man_build": "Custos mensais (seguros/manutenção). Se não fizer sentido, podes pôr 0 no teu caso.",
-    "prazo_obra": "Duração estimada da obra. Prazos maiores tendem a aumentar risco e custos indiretos.",
+    "preco_terreno": "Preço de compra do terreno. Normalmente pago antes da obra (ou no início).",
+    "sistema": "Convencional, LSF, modular… muda custo/tempo/risco. O simulador é estimativo.",
+    "area": "Área útil estimada da casa (m²). Quanto maior, maior o custo total.",
+    "custo_m2": "Custo base de construção por m² (estimativa). Varia por acabamentos, zona, mão de obra e projeto.",
+    "iva6": "Se aplicável, usa IVA reduzido (ex.: 6%). Nem todos os casos/obras se enquadram — confirma com técnico.",
+    "imprevistos": "Margem para derrapagens (recomendado 10–20%). Construção quase nunca fecha 'certinho'.",
+    "proj_lic": "Arquitetura/engenharias/licenças. Depende do município e complexidade do projeto.",
+    "fiscal": "Fiscalização/coordenação de obra. Ajuda a evitar erros caros e derrapagens.",
+    "entrada_build": "Percentagem do total do projeto que entra com capitais próprios. (O banco pode libertar tranches).",
+    "prazo_obra": "Duração estimada da obra. Quanto mais longo, mais risco e mais custos indiretos.",
+    "seg_man_build": "Custos mensais durante/apos obra (seguros/manutenção). Podes pôr 0 se não fizer sentido no teu caso.",
 
-    # ====================
     # Arrendar
-    # ====================
     "renda": "Valor da renda mensal. Serve para perceber quanto sobra para poupar rumo à entrada.",
-    "infl_renda": "Estimativa de subida anual da renda. Se não quiseres complicar, usa 0–3%.",
+    "infl_renda": "Estimativa de subida anual da renda. Se não quiseres complicar, deixa 0–3%.",
 
-    # ====================
     # Comparação
-    # ====================
-    "comparacao": "No RumoCasa, a comparação prioriza a mensalidade — porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia.",
+    "comparacao": "Damos prioridade à mensalidade porque é ela que acompanha a tua vida todos os meses — não só no primeiro dia."
 }
 
 # -------------------------------------------------

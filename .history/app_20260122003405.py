@@ -88,46 +88,38 @@ COPY = {
 }
 
 TIPS = {
-    # ====================
     # Comprar
-    # ====================
-    "url_casa": "Cola aqui o link do anúncio (Idealista/Imovirtual, etc.). Serve para referência (e para automatismos futuros).",
-    "preco_casa": "Preço do imóvel (valor do anúncio). É a base para entrada, IMT e cálculo da prestação.",
-    "tipo_imovel": "HPP = Habitação Própria Permanente (IMT geralmente mais baixo). Secundária = férias/investimento (IMT mais alto).",
-    "novo": "Marca se é imóvel novo (contexto). No MVP não altera o IMT, mas pode ser útil para custos/IVA noutras contas.",
-    "entrada_pct": "Percentagem do preço paga com capitais próprios. Mais entrada = menos crédito e (em regra) prestação mais baixa.",
-    "taeg": "TAEG inclui juros + comissões + seguros. É o indicador mais útil para comparar propostas de bancos.",
-    "prazo": "Prazo do crédito. Mais prazo baixa a prestação, mas aumenta o total pago em juros.",
-    "poup_atual": "Quanto tens disponível para a entrada. (Sugestão: não misturar com fundo de emergência.)",
-    "condo": "Custos fixos mensais (condomínio/manutenção). Pequenos valores acumulam e mexem no orçamento.",
-    "seguros": "Seguros associados ao crédito (vida/habitação). Podem variar muito e alterar a mensalidade real.",
+    "url_casa": "Cola aqui o link do anúncio (Idealista/Imovirtual, etc.). Se o RumoCasa conseguir, tenta sugerir o preço.",
+    "preco_casa": "Preço do imóvel (o valor do anúncio). É a base para entrada, IMT e cálculo da prestação.",
+    "tipo_imovel": "HPP = Habitação Própria Permanente (impostos geralmente mais baixos). Secundária = casa de férias/investimento.",
+    "novo": "Marca se o imóvel é novo e tem IVA incluído no preço (útil para contexto; não altera IMT).",
+    "entrada_pct": "Percentagem do preço que pagas com capitais próprios. Mais entrada = menos crédito e (em regra) prestação mais baixa.",
+    "taeg": "TAEG é o custo 'mais honesto' do crédito: juros + comissões + seguros. Serve para comparar bancos.",
+    "prazo": "Número de anos do crédito. Mais prazo baixa a prestação, mas aumenta o total pago em juros.",
+    "poup_atual": "Quanto já tens disponível para a entrada (podes excluir fundo de emergência se não quiseres tocar nele).",
+    "condo": "Custos fixos mensais do imóvel (condomínio/manutenção). Parece pequeno, mas pesa no orçamento.",
+    "seguros": "Seguros associados (vida/habitação). Em muitos bancos são obrigatórios e podem variar bastante.",
 
-    # ====================
-    # Construir (chaves a bater com o teu código novo)
-    # ====================
+    # Construir
     "url_terreno": "Link do anúncio do terreno (opcional). Serve só para referência.",
-    "preco_terreno": "Preço de compra do terreno. Muitas vezes é pago antes da obra ou no início do processo.",
-    "estrutura": "Convencional, LSF ou Modular/3E. Muda custo, tempo e risco. Este simulador é estimativo.",
-    "area_m2": "Área útil estimada da casa (m²). Quanto maior, maior tende a ser o custo total.",
-    "custo_m2": "Estimativa do custo base por m². Varia por acabamentos, zona, mão de obra e projeto.",
-    "iva_reduzido": "Aplica IVA reduzido (ex.: 6%) apenas quando o teu caso se enquadra. Confirma com técnico/contabilista.",
-    "imprevistos_pct": "Margem para derrapagens (recomendado 10–20%). Construção raramente fecha a 100% do orçamento inicial.",
-    "projetos_lic": "Arquitetura/engenharias/licenças/termos. Depende do município e complexidade do projeto.",
-    "fiscalizacao": "Fiscalização/coordenação. Ajuda a evitar erros caros e derrapagens na obra.",
-    "entrada_pct_build": "Percentagem do total do projeto paga com capitais próprios. (Bancos podem libertar em tranches.)",
-    "cond_man_build": "Custos mensais (seguros/manutenção). Se não fizer sentido, podes pôr 0 no teu caso.",
-    "prazo_obra": "Duração estimada da obra. Prazos maiores tendem a aumentar risco e custos indiretos.",
+    "preco_terreno": "Preço de compra do terreno. Normalmente pago antes da obra (ou no início).",
+    "sistema": "Convencional, LSF, modular… muda custo/tempo/risco. O simulador é estimativo.",
+    "area": "Área útil estimada da casa (m²). Quanto maior, maior o custo total.",
+    "custo_m2": "Custo base de construção por m² (estimativa). Varia por acabamentos, zona, mão de obra e projeto.",
+    "iva6": "Se aplicável, usa IVA reduzido (ex.: 6%). Nem todos os casos/obras se enquadram — confirma com técnico.",
+    "imprevistos": "Margem para derrapagens (recomendado 10–20%). Construção quase nunca fecha 'certinho'.",
+    "proj_lic": "Arquitetura/engenharias/licenças. Depende do município e complexidade do projeto.",
+    "fiscal": "Fiscalização/coordenação de obra. Ajuda a evitar erros caros e derrapagens.",
+    "entrada_build": "Percentagem do total do projeto que entra com capitais próprios. (O banco pode libertar tranches).",
+    "prazo_obra": "Duração estimada da obra. Quanto mais longo, mais risco e mais custos indiretos.",
+    "seg_man_build": "Custos mensais durante/apos obra (seguros/manutenção). Podes pôr 0 se não fizer sentido no teu caso.",
 
-    # ====================
     # Arrendar
-    # ====================
     "renda": "Valor da renda mensal. Serve para perceber quanto sobra para poupar rumo à entrada.",
-    "infl_renda": "Estimativa de subida anual da renda. Se não quiseres complicar, usa 0–3%.",
+    "infl_renda": "Estimativa de subida anual da renda. Se não quiseres complicar, deixa 0–3%.",
 
-    # ====================
     # Comparação
-    # ====================
-    "comparacao": "No RumoCasa, a comparação prioriza a mensalidade — porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia.",
+    "comparacao": "Damos prioridade à mensalidade porque é ela que acompanha a tua vida todos os meses — não só no primeiro dia."
 }
 
 # -------------------------------------------------
@@ -553,10 +545,10 @@ def ui_comprar():
     colL, colR = st.columns(2)
 
     with colL:
-        # URL do anúncio (opcional)
+        # ✅ O widget já guarda sozinho em st.session_state por causa do key=
         url_casa = st.text_input(
             COPY["buy_link_label"],
-            help=TIPS["url_casa"],  # ✅ tooltip mais forte e objetiva
+            help=COPY["buy_link_help"],
             key=K("comprar", "url_casa"),
         )
 
@@ -567,11 +559,10 @@ def ui_comprar():
             step=1000,
             min_value=10000,
             value=int(preco_guess or ss_get(K("comprar", "preco_casa"), 200_000)),
-            help=TIPS["preco_casa"],
             key=K("comprar", "preco_casa_input"),
         )
 
-        # (opcional) espelho sem key (não cria conflito)
+        # (opcional) guardar um “espelho” sem key — isto não dá conflito
         st.session_state[K("comprar", "preco_casa")] = preco_casa
 
     with colR:
@@ -579,15 +570,10 @@ def ui_comprar():
         tipo_imovel = st.selectbox(
             "Tipo de imóvel",
             ["Habitação Própria Permanente", "Secundária"],
-            help=TIPS["tipo_imovel"],
             key=K("comprar", "tipo_imovel"),
             index=0
         )
-        _ = st.checkbox(
-            "Imóvel novo (IVA incluído)",
-            help=TIPS["novo"],
-            key=K("comprar", "novo")
-        )
+        _ = st.checkbox("Imóvel novo (IVA incluído)", key=K("comprar", "novo"))
 
     st.divider()
 
@@ -600,7 +586,6 @@ def ui_comprar():
             max_value=100.0,
             value=float(ss_get(K("comprar", "entrada_pct"), 10.0)),
             step=1.0,
-            help=TIPS["entrada_pct"],
             key=K("comprar", "entrada_pct_input"),
         ) / 100.0
 
@@ -609,7 +594,6 @@ def ui_comprar():
             min_value=0,
             value=int(ss_get(K("comprar", "poup_atual"), 20_000)),
             step=500,
-            help=TIPS["poup_atual"],
             key=K("comprar", "poup_atual_input"),
         )
         st.session_state["poup_atual"] = float(poup_atual)
@@ -620,7 +604,6 @@ def ui_comprar():
             min_value=0.0,
             value=float(ss_get(K("comprar", "taeg"), 4.0)),
             step=0.1,
-            help=TIPS["taeg"],
             key=K("comprar", "taeg_input"),
         ) / 100.0
         st.session_state["taeg_anual"] = float(taeg_anual)
@@ -632,7 +615,6 @@ def ui_comprar():
             max_value=50,
             value=int(ss_get(K("comprar", "prazo"), 30)),
             step=1,
-            help=TIPS["prazo"],
             key=K("comprar", "prazo_input"),
         )
         st.session_state["prazo_anos"] = int(prazo_anos)
@@ -655,7 +637,6 @@ def ui_comprar():
             min_value=0.0,
             value=float(ss_get(K("comprar", "condo"), 0.0)),
             step=5.0,
-            help=TIPS["condo"],
             key=K("comprar", "condo_input"),
         )
         seguros = st.number_input(
@@ -663,7 +644,6 @@ def ui_comprar():
             min_value=0.0,
             value=float(ss_get(K("comprar", "seguros"), 0.0)),
             step=5.0,
-            help=TIPS["seguros"],
             key=K("comprar", "seguros_input"),
         )
 
@@ -702,127 +682,36 @@ def ui_construir():
     st.markdown("<h3>🏗️ Construir</h3>", unsafe_allow_html=True)
 
     colL, colR = st.columns(2)
-
     with colL:
-        # Link do terreno (opcional)
-        url_terreno = st.text_input(
-            COPY["build_link_label"],
-            help=TIPS["url_terreno"],
-            key=K("construir", "url_terreno"),
-        )
+        st.caption("Link do anúncio (terreno) (opcional)")
+        url_terreno = st.text_input(COPY["build_link_label"], help=COPY["build_link_help"])
         st.session_state[K("construir", "url_terreno")] = url_terreno
 
-        preco_terreno = st.number_input(
-            "Preço do terreno (€)",
-            step=1000,
-            min_value=0,
-            value=int(ss_get(K("construir", "preco_terreno"), 50_000)),
-            help=TIPS["preco_terreno"],
-            key=K("construir", "preco_terreno_input"),
-        )
+        preco_terreno = st.number_input("Preço do terreno (€)", step=1000, min_value=0, value=int(ss_get(K("construir", "preco_terreno"), 50_000)), key=K("construir", "preco_terreno_input"))
         st.session_state[K("construir", "preco_terreno")] = preco_terreno
 
     with colR:
-        estrutura = st.selectbox(
-            "Sistema construtivo",
-            ["Convencional", "LSF (aço leve)", "Modular / 3E"],
-            help=TIPS["estrutura"],
-            key=K("construir", "estrutura"),
-            index=0,
-        )
-
-        area_m2 = st.number_input(
-            "Área útil (m²)",
-            min_value=40,
-            value=int(ss_get(K("construir", "area_m2"), 120)),
-            step=5,
-            help=TIPS["area_m2"],
-            key=K("construir", "area_m2_input"),
-        )
-
-        custo_m2 = st.number_input(
-            "Custo base construção (€/m²)",
-            min_value=600,
-            value=int(ss_get(K("construir", "custo_m2"), 1100)),
-            step=50,
-            help=TIPS["custo_m2"],
-            key=K("construir", "custo_m2_input"),
-        )
+        estrutura = st.selectbox("Sistema construtivo", ["Convencional", "LSF (aço leve)", "Modular / 3E"], key=K("construir", "estrutura"), index=0)
+        area_m2 = st.number_input("Área útil (m²)", min_value=40, value=int(ss_get(K("construir", "area_m2"), 120)), step=5, key=K("construir", "area_m2_input"))
+        custo_m2 = st.number_input("Custo base construção (€/m²)", min_value=600, value=int(ss_get(K("construir", "custo_m2"), 1100)), step=50, key=K("construir", "custo_m2_input"))
 
     col1, col2, col3 = st.columns(3)
-
     with col1:
-        iva_reduzido = st.checkbox(
-            "IVA reduzido (ex.: 6%)",
-            value=bool(ss_get(K("construir", "iva_red"), True)),
-            help=TIPS["iva_reduzido"],
-            key=K("construir", "iva_reduzido"),
-        )
-
-        imprevistos_pct = st.slider(
-            "Imprevistos (%)",
-            0,
-            20,
-            value=int(ss_get(K("construir", "imp_pct"), 10)),
-            help=TIPS["imprevistos_pct"],
-            key=K("construir", "imp_prev"),
-        )
-
+        iva_reduzido = st.checkbox("IVA reduzido (ex.: 6%)", value=bool(ss_get(K("construir", "iva_red"), True)), key=K("construir", "iva_reduzido"))
+        imprevistos_pct = st.slider("Imprevistos (%)", 0, 20, value=int(ss_get(K("construir", "imp_pct"), 10)), key=K("construir", "imp_prev"))
     with col2:
-        projetos_lic = st.number_input(
-            "Projetos & Licenças (€)",
-            value=float(ss_get(K("construir", "proj"), 8000.0)),
-            step=1000.0,
-            min_value=0.0,
-            help=TIPS["projetos_lic"],
-            key=K("construir", "proj_input"),
-        )
-
+        projetos_lic = st.number_input("Projetos & Licenças (€)", value=float(ss_get(K("construir", "proj"), 8000.0)), step=1000.0, min_value=0.0, key=K("construir", "proj_input"))
     with col3:
-        fiscalizacao = st.number_input(
-            "Fiscalização/Coordenação (€)",
-            value=float(ss_get(K("construir", "fisc"), 3000.0)),
-            step=500.0,
-            min_value=0.0,
-            help=TIPS["fiscalizacao"],
-            key=K("construir", "fisc_input"),
-        )
+        fiscalizacao = st.number_input("Fiscalização/Coordenação (€)", value=float(ss_get(K("construir", "fisc"), 3000.0)), step=500.0, min_value=0.0, key=K("construir", "fisc_input"))
 
     st.divider()
-
     colM, colN = st.columns(2)
-
     with colM:
-        entrada_pct_build = st.slider(
-            "% Entrada (construção)",
-            0.0,
-            50.0,
-            value=float(ss_get(K("construir", "entrada_pct_build"), 10.0)),
-            step=1.0,
-            help=TIPS["entrada_pct_build"],
-            key=K("construir", "entrada_constr"),
-        ) / 100.0
-
-        cond_man_build = st.number_input(
-            "Seguros + Manutenção (€/mês)",
-            value=float(ss_get(K("construir", "cond_build"), 40.0)),
-            step=5.0,
-            min_value=0.0,
-            help=TIPS["cond_man_build"],
-            key=K("construir", "cond_build_input"),
-        )
-
+        entrada_pct_build = st.slider("% Entrada (construção)", 0.0, 50.0, value=float(ss_get(K("construir", "entrada_pct_build"), 10.0)), step=1.0, key=K("construir", "entrada_constr")) / 100.0
+        cond_man_build = st.number_input("Seguros + Manutenção (€/mês)", value=float(ss_get(K("construir", "cond_build"), 40.0)), step=5.0, min_value=0.0, key=K("construir", "cond_build_input"))
     with colN:
-        _ = st.slider(
-            "Prazo de obra (meses)",
-            6,
-            24,
-            value=int(ss_get(K("construir", "obra_meses"), 12)),
-            help=TIPS["prazo_obra"],
-            key=K("construir", "prazo_obra"),
-        )
+        _ = st.slider("Prazo de obra (meses)", 6, 24, value=int(ss_get(K("construir", "obra_meses"), 12)), key=K("construir", "prazo_obra"))
 
-    # --- Ajuste simples por sistema construtivo (MVP) ---
     fator = 1.00
     if estrutura == "LSF (aço leve)":
         fator = 0.95
@@ -843,7 +732,6 @@ def ui_construir():
         + float(fiscalizacao)
     )
 
-    # Usa taxa/prazo da secção Comprar (para comparar com a mesma base)
     taeg_anual = float(st.session_state.get("taeg_anual", 0.04))
     prazo_anos = int(st.session_state.get("prazo_anos", 30))
 
@@ -853,13 +741,9 @@ def ui_construir():
     mensal_build = float(prest_build) + float(cond_man_build)
 
     colX, colY = st.columns(2)
-
     with colX:
         st.metric("Total do projeto (estimado)", euro0(total_construcao))
-        st.caption(
-            f"Base: {euro0(custo_construcao_base)} | IVA: {euro0(iva_construcao)} | Imprevistos: {euro0(imprevistos)}"
-        )
-
+        st.caption(f"Base: {euro0(custo_construcao_base)} | IVA: {euro0(iva_construcao)} | Imprevistos: {euro0(imprevistos)}")
     with colY:
         st.metric("Entrada necessária", euro0(entrada_build))
         st.metric("Prestação estimada (crédito)", euro0(prest_build))
