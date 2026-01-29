@@ -43,6 +43,8 @@ COPY = {
         "o impacto do preço na entrada e na prestação, os custos associados à compra "
         "e a viabilidade do crédito no teu orçamento."
     ),
+    "buy_link_label": "URL do anúncio (casa) (opcional)",
+    "buy_link_help": "Podes colar o URL de um anúncio para facilitar a simulação.",
 
     "build_title": "🏗️ Construir casa",
     "build_body": (
@@ -89,24 +91,19 @@ TIPS = {
     # ====================
     # Comprar
     # ====================
-    "preco_casa": "Preço do imóvel (valor do anúncio). É a base para calcular entrada, IMT e prestação.",
-    "preco_hint": "Dica: usa o preço do anúncio. Se for um empreendimento novo, confirma se o valor inclui lugar de garagem/arrecadação e extras.",
+    "url_casa": "Cola aqui o link do anúncio (Idealista/Imovirtual, etc.). Serve para referência (e para automatismos futuros).",
+    "preco_casa": "Preço do imóvel (valor do anúncio). É a base para entrada, IMT e cálculo da prestação.",
     "tipo_imovel": "HPP = Habitação Própria Permanente (IMT geralmente mais baixo). Secundária = férias/investimento (IMT mais alto).",
-    "novo": "Imóvel novo (contexto). No MVP não altera o IMT, mas pode ajudar em contas futuras (ex.: IVA/obras/acabamentos).",
-    "entrada_pct": "Percentagem do preço paga com capitais próprios. Mais entrada = menos crédito e, em regra, prestação mais baixa.",
+    "novo": "Marca se é imóvel novo (contexto). No MVP não altera o IMT, mas pode ser útil para custos/IVA noutras contas.",
+    "entrada_pct": "Percentagem do preço paga com capitais próprios. Mais entrada = menos crédito e (em regra) prestação mais baixa.",
     "taeg": "TAEG inclui juros + comissões + seguros. É o indicador mais útil para comparar propostas de bancos.",
     "prazo": "Prazo do crédito. Mais prazo baixa a prestação, mas aumenta o total pago em juros.",
-    "poup_atual": "Quanto tens disponível para a entrada. Sugestão: não misturar com fundo de emergência.",
-    "condo": "Custos mensais fixos do imóvel (condomínio/manutenção). Pequenos valores acumulam e mexem no orçamento.",
+    "poup_atual": "Quanto tens disponível para a entrada. (Sugestão: não misturar com fundo de emergência.)",
+    "condo": "Custos fixos mensais (condomínio/manutenção). Pequenos valores acumulam e mexem no orçamento.",
     "seguros": "Seguros associados ao crédito (vida/habitação). Podem variar muito e alterar a mensalidade real.",
 
-    # Extras (expander Comprar)
-    "custo_avaliacao": "Custos típicos do início do processo: avaliação bancária, comissões iniciais, certidões, etc. (depende do banco).",
-    "obras_mob": "Obras e/ou mobiliário inicial. Se a casa estiver pronta a habitar, pode ser 0.",
-    "outros_custos": "Qualquer custo extra que queiras considerar (mudança, eletrodomésticos, pequenas reparações, etc.).",
-
     # ====================
-    # Construir (chaves = as do teu ui_construir)
+    # Construir (chaves a bater com o teu código novo)
     # ====================
     "url_terreno": "Link do anúncio do terreno (opcional). Serve só para referência.",
     "preco_terreno": "Preço de compra do terreno. Muitas vezes é pago antes da obra ou no início do processo.",
@@ -575,48 +572,26 @@ def ui_comprar():
     colL, colR = st.columns(2)
 
     with colL:
+        # URL do anúncio (opcional)
+        url_casa = st.text_input(
+            COPY["buy_link_label"],
+            help=TIPS["url_casa"],  # ✅ tooltip mais forte e objetiva
+            key=K("comprar", "url_casa"),
+        )
+
+        preco_guess = guess_price_from_url(url_casa) if url_casa else None
+
         preco_casa = st.number_input(
             "Preço da casa (€)",
             step=1000,
             min_value=10000,
-            value=int(ss_get(K("comprar", "preco_casa"), 200_000)),
+            value=int(preco_guess or ss_get(K("comprar", "preco_casa"), 200_000)),
             help=TIPS["preco_casa"],
             key=K("comprar", "preco_casa_input"),
         )
+
+        # (opcional) espelho sem key (não cria conflito)
         st.session_state[K("comprar", "preco_casa")] = preco_casa
-
-        st.caption("💡 " + TIPS["preco_hint"])
-
-        with st.expander("➕ Custos adicionais (opcional, mas recomendado)", expanded=False):
-            custo_avaliacao = st.number_input(
-                "Avaliação + despesas iniciais (€)",
-                min_value=0,
-                step=50,
-                value=int(ss_get(K("comprar", "custo_avaliacao"), 1000)),
-                help=TIPS["custo_avaliacao"],
-                key=K("comprar", "custo_avaliacao_input"),
-            )
-            st.session_state[K("comprar", "custo_avaliacao")] = custo_avaliacao
-
-            obras_mob = st.number_input(
-                "Obras / mobiliário inicial (€)",
-                min_value=0,
-                step=250,
-                value=int(ss_get(K("comprar", "obras_mob"), 0)),
-                help=TIPS["obras_mob"],
-                key=K("comprar", "obras_mob_input"),
-            )
-            st.session_state[K("comprar", "obras_mob")] = obras_mob
-
-            outros_extra = st.number_input(
-                "Outros custos (€)",
-                min_value=0,
-                step=100,
-                value=int(ss_get(K("comprar", "outros_extra"), 0)),
-                help=TIPS["outros_custos"],
-                key=K("comprar", "outros_extra_input"),
-            )
-            st.session_state[K("comprar", "outros_extra")] = outros_extra
 
     with colR:
         st.caption("Perfil do imóvel")
@@ -625,12 +600,12 @@ def ui_comprar():
             ["Habitação Própria Permanente", "Secundária"],
             help=TIPS["tipo_imovel"],
             key=K("comprar", "tipo_imovel"),
-            index=0,
+            index=0
         )
         _ = st.checkbox(
             "Imóvel novo (IVA incluído)",
             help=TIPS["novo"],
-            key=K("comprar", "novo"),
+            key=K("comprar", "novo")
         )
 
     st.divider()
@@ -681,21 +656,11 @@ def ui_comprar():
         )
         st.session_state["prazo_anos"] = int(prazo_anos)
 
-    # ----------------------------
-    # Cálculos
-    # ----------------------------
     is_hpp = (tipo_imovel == "Habitação Própria Permanente")
     imt = calc_imt_2025(preco_casa, hab_pp=is_hpp)
     selo = 0.008 * float(preco_casa)
-
-    escritura_regs = 1000.0
-
-    custo_avaliacao = float(st.session_state.get(K("comprar", "custo_avaliacao"), 1000.0))
-    obras_mob = float(st.session_state.get(K("comprar", "obras_mob"), 0.0))
-    outros_extra = float(st.session_state.get(K("comprar", "outros_extra"), 0.0))
-
-    custos_extra = custo_avaliacao + obras_mob + outros_extra
-    custos_compra = imt + selo + escritura_regs + custos_extra
+    outros_custos = 1000.0
+    custos_compra = imt + selo + outros_custos
 
     entrada = float(preco_casa) * float(entrada_pct)
     financiado = max(0.0, float(preco_casa) - entrada)
@@ -728,10 +693,11 @@ def ui_comprar():
     upfront_buy = float(entrada) + float(custos_compra)
 
     col1, col2 = st.columns(2)
+
     with col1:
         st.metric("Entrada necessária (entrada + impostos/custos)", euro0(upfront_buy))
         st.caption(
-            f"IMT 2025: {euro0(imt)} | Selo: {euro0(selo)} | Escritura/registos: {euro0(escritura_regs)} | Extras: {euro0(custos_extra)}"
+            f"IMT 2025: {euro0(imt)} | Selo: {euro0(selo)} | Escritura/registos (est.): {euro0(outros_custos)}"
         )
 
     with col2:

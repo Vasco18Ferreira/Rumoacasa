@@ -89,24 +89,19 @@ TIPS = {
     # ====================
     # Comprar
     # ====================
-    "preco_casa": "Preço do imóvel (valor do anúncio). É a base para calcular entrada, IMT e prestação.",
-    "preco_hint": "Dica: usa o preço do anúncio. Se for um empreendimento novo, confirma se o valor inclui lugar de garagem/arrecadação e extras.",
+    TIPS.update({
+    "preco_casa": "Preço do imóvel (valor do anúncio). É a base para entrada, IMT e cálculo da prestação.",
     "tipo_imovel": "HPP = Habitação Própria Permanente (IMT geralmente mais baixo). Secundária = férias/investimento (IMT mais alto).",
-    "novo": "Imóvel novo (contexto). No MVP não altera o IMT, mas pode ajudar em contas futuras (ex.: IVA/obras/acabamentos).",
-    "entrada_pct": "Percentagem do preço paga com capitais próprios. Mais entrada = menos crédito e, em regra, prestação mais baixa.",
+    "novo": "Marca se é imóvel novo (contexto). No MVP não altera o IMT, mas pode ser útil para custos/IVA noutras contas.",
+    "entrada_pct": "Percentagem do preço paga com capitais próprios. Mais entrada = menos crédito e (em regra) prestação mais baixa.",
     "taeg": "TAEG inclui juros + comissões + seguros. É o indicador mais útil para comparar propostas de bancos.",
     "prazo": "Prazo do crédito. Mais prazo baixa a prestação, mas aumenta o total pago em juros.",
-    "poup_atual": "Quanto tens disponível para a entrada. Sugestão: não misturar com fundo de emergência.",
-    "condo": "Custos mensais fixos do imóvel (condomínio/manutenção). Pequenos valores acumulam e mexem no orçamento.",
+    "poup_atual": "Quanto tens disponível para a entrada. (Sugestão: não misturar com fundo de emergência.)",
+    "condo": "Custos fixos mensais (condomínio/manutenção). Pequenos valores acumulam e mexem no orçamento.",
     "seguros": "Seguros associados ao crédito (vida/habitação). Podem variar muito e alterar a mensalidade real.",
 
-    # Extras (expander Comprar)
-    "custo_avaliacao": "Custos típicos do início do processo: avaliação bancária, comissões iniciais, certidões, etc. (depende do banco).",
-    "obras_mob": "Obras e/ou mobiliário inicial. Se a casa estiver pronta a habitar, pode ser 0.",
-    "outros_custos": "Qualquer custo extra que queiras considerar (mudança, eletrodomésticos, pequenas reparações, etc.).",
-
     # ====================
-    # Construir (chaves = as do teu ui_construir)
+    # Construir (chaves a bater com o teu código novo)
     # ====================
     "url_terreno": "Link do anúncio do terreno (opcional). Serve só para referência.",
     "preco_terreno": "Preço de compra do terreno. Muitas vezes é pago antes da obra ou no início do processo.",
