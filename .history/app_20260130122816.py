@@ -6,6 +6,22 @@ import csv
 import pandas as pd
 import altair as alt
 
+# ------------------------------
+# RESET na primeira abertura
+# ------------------------------
+if "boot_done" not in st.session_state:
+    st.session_state["boot_done"] = True
+
+    # valores que aparecem no resumo/topo
+    st.session_state["upfront_buy"] = 0.0
+    st.session_state["mensal_compra"] = 0.0
+    st.session_state["financiado"] = 0.0
+
+    st.session_state["entrada_build"] = 0.0
+    st.session_state["mensal_build"] = 0.0
+
+    # (opcional) também zera os auxiliares
+    st.session_state["imt_2025"] = 0.0
 
 # ================================
 # COPY PREMIUM (PT) — RumoCasa
@@ -437,7 +453,38 @@ html, body, .stApp {
     unsafe_allow_html=True,
 )
 
+# -------------------------------------------------
+# HEADER + CARTÃO INICIAL (copy premium)
+# -------------------------------------------------
+st.markdown(
+    """
+    <div class="rc-header rc-fade-in">
+      <div class="rc-logo">
+        <span class="emoji">🏡</span>
+        <span class="rc-logo-text">RumoCasa</span>
+      </div>
 
+      <div class="rc-tagline">
+        O planeador inteligente para a tua decisão de casa.
+      </div>
+
+      <div class="rc-header-line"></div>
+    </div>
+
+    <div class="section-card rc-main-card rc-fade-in">
+      <h2 class="rc-main-section-title">📊 O que queres simular?</h2>
+      <p class="subtitle">
+        Decide com números, não com “achismos”.
+        Compara <b>Comprar</b> e <b>Construir</b>, percebe a <b>entrada</b>, a <b>mensalidade</b> e o impacto dos <b>juros</b>.
+        E se estás a arrendar, usa isso como fase estratégica enquanto juntas (e fazes o dinheiro trabalhar).
+      </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# placeholder da sticky bar
+sticky_placeholder = st.empty()
 
 # -------------------------------------------------
 # Helpers / utilitários
@@ -491,58 +538,6 @@ def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
         return v * 0.06
 
     return v * taxa - parcela
-
-# ------------------------------
-# RESET na primeira abertura
-# ------------------------------
-if "boot_done" not in st.session_state:
-    st.session_state["boot_done"] = True
-
-    # valores que aparecem no resumo/topo
-    st.session_state["upfront_buy"] = 0.0
-    st.session_state["mensal_compra"] = 0.0
-    st.session_state["financiado"] = 0.0
-
-    st.session_state["entrada_build"] = 0.0
-    st.session_state["mensal_build"] = 0.0
-
-    # (opcional) também zera os auxiliares
-    st.session_state["imt_2025"] = 0.0
-
-
-# -------------------------------------------------
-# HEADER + CARTÃO INICIAL (copy premium)
-# -------------------------------------------------
-st.markdown(
-    """
-    <div class="rc-header rc-fade-in">
-      <div class="rc-logo">
-        <span class="emoji">🏡</span>
-        <span class="rc-logo-text">RumoCasa</span>
-      </div>
-
-      <div class="rc-tagline">
-        O planeador inteligente para a tua decisão de casa.
-      </div>
-
-      <div class="rc-header-line"></div>
-    </div>
-
-    <div class="section-card rc-main-card rc-fade-in">
-      <h2 class="rc-main-section-title">📊 O que queres simular?</h2>
-      <p class="subtitle">
-        Decide com números, não com “achismos”.
-        Compara <b>Comprar</b> e <b>Construir</b>, percebe a <b>entrada</b>, a <b>mensalidade</b> e o impacto dos <b>juros</b>.
-        E se estás a arrendar, usa isso como fase estratégica enquanto juntas (e fazes o dinheiro trabalhar).
-      </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# placeholder da sticky bar
-sticky_placeholder = st.empty()
-
 
 # -------------------------------------------------
 # Sticky Summary — resumo rápido da simulação
@@ -1144,7 +1139,7 @@ def ui_conforto_mensal():
         st.info("Preenche **Comprar** e/ou **Construir** primeiro para o RumoCasa avaliar o conforto mensal.")
         st.markdown("</div>", unsafe_allow_html=True)
         return
-    
+
     conforto = st.number_input(
         "O teu conforto mensal (€)",
         min_value=0,

@@ -6,6 +6,22 @@ import csv
 import pandas as pd
 import altair as alt
 
+# ------------------------------
+# RESET na primeira abertura
+# ------------------------------
+if "boot_done" not in st.session_state:
+    st.session_state["boot_done"] = True
+
+    # valores que aparecem no resumo/topo
+    st.session_state["upfront_buy"] = 0.0
+    st.session_state["mensal_compra"] = 0.0
+    st.session_state["financiado"] = 0.0
+
+    st.session_state["entrada_build"] = 0.0
+    st.session_state["mensal_build"] = 0.0
+
+    # (opcional) também zera os auxiliares
+    st.session_state["imt_2025"] = 0.0
 
 # ================================
 # COPY PREMIUM (PT) — RumoCasa
@@ -437,7 +453,38 @@ html, body, .stApp {
     unsafe_allow_html=True,
 )
 
+# -------------------------------------------------
+# HEADER + CARTÃO INICIAL (copy premium)
+# -------------------------------------------------
+st.markdown(
+    """
+    <div class="rc-header rc-fade-in">
+      <div class="rc-logo">
+        <span class="emoji">🏡</span>
+        <span class="rc-logo-text">RumoCasa</span>
+      </div>
 
+      <div class="rc-tagline">
+        O planeador inteligente para a tua decisão de casa.
+      </div>
+
+      <div class="rc-header-line"></div>
+    </div>
+
+    <div class="section-card rc-main-card rc-fade-in">
+      <h2 class="rc-main-section-title">📊 O que queres simular?</h2>
+      <p class="subtitle">
+        Decide com números, não com “achismos”.
+        Compara <b>Comprar</b> e <b>Construir</b>, percebe a <b>entrada</b>, a <b>mensalidade</b> e o impacto dos <b>juros</b>.
+        E se estás a arrendar, usa isso como fase estratégica enquanto juntas (e fazes o dinheiro trabalhar).
+      </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# placeholder da sticky bar
+sticky_placeholder = st.empty()
 
 # -------------------------------------------------
 # Helpers / utilitários
@@ -491,58 +538,6 @@ def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
         return v * 0.06
 
     return v * taxa - parcela
-
-# ------------------------------
-# RESET na primeira abertura
-# ------------------------------
-if "boot_done" not in st.session_state:
-    st.session_state["boot_done"] = True
-
-    # valores que aparecem no resumo/topo
-    st.session_state["upfront_buy"] = 0.0
-    st.session_state["mensal_compra"] = 0.0
-    st.session_state["financiado"] = 0.0
-
-    st.session_state["entrada_build"] = 0.0
-    st.session_state["mensal_build"] = 0.0
-
-    # (opcional) também zera os auxiliares
-    st.session_state["imt_2025"] = 0.0
-
-
-# -------------------------------------------------
-# HEADER + CARTÃO INICIAL (copy premium)
-# -------------------------------------------------
-st.markdown(
-    """
-    <div class="rc-header rc-fade-in">
-      <div class="rc-logo">
-        <span class="emoji">🏡</span>
-        <span class="rc-logo-text">RumoCasa</span>
-      </div>
-
-      <div class="rc-tagline">
-        O planeador inteligente para a tua decisão de casa.
-      </div>
-
-      <div class="rc-header-line"></div>
-    </div>
-
-    <div class="section-card rc-main-card rc-fade-in">
-      <h2 class="rc-main-section-title">📊 O que queres simular?</h2>
-      <p class="subtitle">
-        Decide com números, não com “achismos”.
-        Compara <b>Comprar</b> e <b>Construir</b>, percebe a <b>entrada</b>, a <b>mensalidade</b> e o impacto dos <b>juros</b>.
-        E se estás a arrendar, usa isso como fase estratégica enquanto juntas (e fazes o dinheiro trabalhar).
-      </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# placeholder da sticky bar
-sticky_placeholder = st.empty()
-
 
 # -------------------------------------------------
 # Sticky Summary — resumo rápido da simulação
@@ -1022,7 +1017,7 @@ def ui_arrendar_estrategia():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Comparar (apenas aquisição) - BLOCO DECISÃO
+# Comparar (apenas aquisição)
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -1043,7 +1038,7 @@ def ui_comparar():
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    # KPIs simples
+    # --- KPIs ---
     col1, col2 = st.columns(2)
     with col1:
         st.metric("À cabeça (comprar)", euro0(upfront_buy))
@@ -1052,61 +1047,95 @@ def ui_comparar():
         st.metric("À cabeça (construir)", euro0(upfront_build))
         st.metric("Mensal (construir)", euro0(mensal_build))
 
-    st.divider()
+    # --- Determinar vencedor pela mensalidade ---
+    winner = None
+    diff = 0.0
+    intensity = 0.35  # default neutro
 
-    # Se só uma opção estiver preenchida
-    if mensal_buy <= 0 or mensal_build <= 0:
-        only = "Comprar" if mensal_buy > 0 else "Construir"
-        st.markdown("## 🧭 Decisão neste cenário")
-        st.info(
-            f"Neste momento só tens **{only}** preenchido. "
-            "Preenche a outra opção para o RumoCasa te dizer qual fica mais leve no orçamento."
+    if mensal_buy > 0 and mensal_build > 0:
+        if mensal_buy < mensal_build:
+            winner = "Comprar"
+            diff = mensal_build - mensal_buy
+        elif mensal_build < mensal_buy:
+            winner = "Construir"
+            diff = mensal_buy - mensal_build
+        else:
+            winner = "Empate"
+            diff = 0.0
+
+        base = max(mensal_buy, mensal_build)
+        rel = (diff / base) if base > 0 else 0.0
+        intensity = min(max(rel, 0.12), 0.90)  # quanto mais diferença, mais “forte”
+
+    # --- BLOCO DECISÃO (o guia que “pega na mão”) ---
+    st.markdown("#### 🏆 Melhor escolha neste cenário")
+
+    if winner == "Comprar":
+        st.success(
+            f"👉 **Comprar** surge como a opção mais confortável no mês a mês.\n\n"
+            f"**Diferença estimada:** {euro0(diff)}/mês\n\n"
+            f"💬 Leitura simples: uma mensalidade mais baixa dá-te mais folga para viver, poupar e aguentar imprevistos."
         )
-        st.markdown("</div>", unsafe_allow_html=True)
-        return
 
-    # --- DECISÃO (mensalidade)
-    if mensal_buy < mensal_build:
-        winner = "Comprar"
-        diff_m = mensal_build - mensal_buy
+    elif winner == "Construir":
+        st.success(
+            f"👉 **Construir** surge como a opção mais eficiente no mês a mês.\n\n"
+            f"**Diferença estimada:** {euro0(diff)}/mês\n\n"
+            f"💬 Leitura simples: neste cenário, a prestação fica mais leve — mas lembra-te que construir tem mais variáveis no processo."
+        )
+
+    elif winner == "Empate":
+        st.info(
+            "⚖️ **As duas opções estão muito próximas** (mensalidade semelhante).\n\n"
+            "Aqui a decisão tende a ser mais **estilo de vida** do que números:\n"
+            "• queres personalização total? → construir\n"
+            "• queres simplicidade e previsibilidade? → comprar"
+        )
+
     else:
-        winner = "Construir"
-        diff_m = mensal_buy - mensal_build
+        # Quando só existe 1 opção preenchida
+        st.info("ℹ️ Preenche a outra opção (Comprar ou Construir) para o RumoCasa conseguir comparar e recomendar.")
 
-    # diferença "à cabeça" (apenas se ambos existirem)
-    diff_u = abs(upfront_buy - upfront_build)
-
-    # força (para linguagem do bloco)
-    base = max(mensal_buy, mensal_build)
-    rel = (diff_m / base) if base > 0 else 0.0
-
-    if rel >= 0.15:
-        label_force = "Diferença forte"
-        emoji = "🔥"
-    elif rel >= 0.07:
-        label_force = "Diferença moderada"
-        emoji = "✅"
-    else:
-        label_force = "Diferença pequena"
-        emoji = "⚖️"
-
-    st.markdown("## 🏆 Melhor escolha neste cenário")
-    st.success(
-        f"**{winner}** fica mais leve no orçamento mensal "
-        f"(~ **{euro0(diff_m)} / mês**).  \n"
-        f"{emoji} {label_force}."
+    st.caption(
+        "⚠️ Recomendação gerada com base nos dados simulados. "
+        "Não substitui propostas formais de bancos, nem aconselhamento personalizado."
     )
 
-    # guia rápido (pega na mão)
-    with st.expander("🧠 Porque é que o RumoCasa escolheu isto?", expanded=True):
-        st.markdown(
-            f"""
-- **Critério principal:** mensalidade (o custo que te acompanha todos os meses).
-- **Diferença mensal estimada:** ~ **{euro0(diff_m)} / mês**.
-- **Diferença à cabeça (entrada + impostos/custos):** ~ **{euro0(diff_u)}** *(estimado)*.
-- **Nota:** isto é um *guia*, não uma garantia — custos reais variam por banco, obra, licenças, acabamentos, etc.
-"""
+    # --- Dados para o gráfico ---
+    data = []
+    if mensal_buy > 0:
+        data.append({"Opção": "Comprar", "Mensal (€)": mensal_buy})
+    if mensal_build > 0:
+        data.append({"Opção": "Construir", "Mensal (€)": mensal_build})
+
+    df = pd.DataFrame(data)
+
+    # --- Cor dinâmica no gráfico ---
+    green = f"rgba(15, 81, 50, {intensity:.2f})"
+    gray  = "rgba(107, 114, 128, 0.35)"
+    neutral = "rgba(15, 81, 50, 0.30)"
+
+    if winner in ("Comprar", "Construir"):
+        df["Cor"] = df["Opção"].apply(lambda x: green if x == winner else gray)
+    else:
+        df["Cor"] = neutral
+
+    chart = (
+        alt.Chart(df)
+        .mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6)
+        .encode(
+            x=alt.X("Opção:N", sort=None),
+            y=alt.Y("Mensal (€):Q"),
+            color=alt.Color("Cor:N", scale=None, legend=None),
+            tooltip=[
+                alt.Tooltip("Opção:N"),
+                alt.Tooltip("Mensal (€):Q", format=",.0f"),
+            ],
         )
+        .properties(height=260)
+    )
+
+    st.altair_chart(chart, use_container_width=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1115,61 +1144,71 @@ def ui_comparar():
 # ================================
 def ui_conforto_mensal():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.markdown("<h3>🧾 Cabe no teu conforto mensal?</h3>", unsafe_allow_html=True)
 
-    st.caption("✅ Define um valor de conforto (o máximo que te sentes bem a pagar por mês). O RumoCasa compara com a mensalidade do teu cenário.")
+    st.markdown("<h3>💡 Cabe no teu conforto mensal?</h3>", unsafe_allow_html=True)
+    st.caption(
+        "✅ Define um valor de conforto (o máximo que te sentes bem a pagar por mês). "
+        "O RumoCasa compara com a mensalidade do teu cenário."
+    )
 
-    mensal_buy   = float(st.session_state.get("mensal_compra", 0.0))
+    # mensalidades vindas das secções
+    mensal_buy = float(st.session_state.get("mensal_compra", 0.0))
     mensal_build = float(st.session_state.get("mensal_build", 0.0))
 
-    # escolher a mensalidade "ativa"
-    mensal = 0.0
-    label = ""
-    if mensal_buy > 0 and mensal_build > 0:
-        # se já tens comparação, usa a menor (mais “provável” no teu cenário)
-        if mensal_buy <= mensal_build:
-            mensal = mensal_buy
-            label = "Comprar"
-        else:
-            mensal = mensal_build
-            label = "Construir"
-    elif mensal_buy > 0:
-        mensal = mensal_buy
-        label = "Comprar"
-    elif mensal_build > 0:
-        mensal = mensal_build
-        label = "Construir"
-
-    if mensal <= 0:
-        st.info("Preenche **Comprar** e/ou **Construir** primeiro para o RumoCasa avaliar o conforto mensal.")
+    if mensal_buy <= 0 and mensal_build <= 0:
+        st.info("Preenche **Comprar** e/ou **Construir** para avaliarmos se cabe no teu conforto mensal.")
         st.markdown("</div>", unsafe_allow_html=True)
         return
-    
+
+    # input de conforto mensal
     conforto = st.number_input(
-        "O teu conforto mensal (€)",
-        min_value=0,
-        step=25,
-        value=int(st.session_state.get("conforto_mensal", 900)),
-        help="Não é o 'máximo possível'. É o máximo que te deixa tranquilo mês após mês.",
+        "Qual é o teu conforto mensal máximo? (€ / mês)",
+        min_value=0.0,
+        step=25.0,
+        value=float(st.session_state.get("conforto_mensal", 900.0)),
+        help="Valor que te deixa confortável (sem apertos). Não é 'o máximo possível', é o máximo 'tranquilo'.",
         key="conforto_mensal_input",
     )
     st.session_state["conforto_mensal"] = float(conforto)
 
-    folga = float(conforto) - float(mensal)
+    st.divider()
 
-    st.markdown("### 📌 Resultado")
-    if folga >= 0:
-        st.success(
-            f"Com este cenário (**{label}**), a mensalidade estimada é **{euro0(mensal)}** — "
-            f"fica **dentro** do teu conforto (folga ~ **{euro0(folga)} / mês**)."
-        )
-        st.caption("💡 Dica: usa parte da folga para poupança/segurança (imprevistos, manutenção, taxas futuras).")
-    else:
-        st.warning(
-            f"Com este cenário (**{label}**), a mensalidade estimada é **{euro0(mensal)}** — "
-            f"fica **acima** do teu conforto (diferença ~ **{euro0(abs(folga))} / mês**)."
-        )
-        st.caption("💡 Caminhos típicos: aumentar entrada, reduzir preço alvo, alongar prazo, ou baixar TAEG (negociação).")
+    # Avaliar cada opção
+    def avaliar(nome: str, mensal: float):
+        if mensal <= 0:
+            return
+        folga = conforto - mensal
+        pct = (mensal / conforto) if conforto > 0 else 0.0
+
+        st.markdown(f"#### {nome}")
+        col1, col2 = st.columns([1, 1])
+
+        with col1:
+            st.metric("Mensalidade", euro0(mensal))
+        with col2:
+            st.metric("Folga vs conforto", euro0(folga))
+
+        if conforto <= 0:
+            st.warning("Define um conforto mensal acima de 0€ para conseguires comparar.")
+            return
+
+        # Regras simples e claras (guia)
+        if folga >= 0:
+            if pct <= 0.70:
+                st.success("✅ Cabe com folga. Tens margem para imprevistos e variações de taxa.")
+            elif pct <= 0.85:
+                st.success("✅ Cabe — mas já é um compromisso relevante. Atenção a seguros/condomínio e taxa.")
+            else:
+                st.warning("⚠️ Cabe por pouco. Qualquer subida de taxa/custo pode apertar. Vê a sensibilidade abaixo.")
+        else:
+            st.error("❌ Não cabe no teu conforto mensal. Ou baixas o preço, aumentas a entrada, ou ajustas prazo/taxa.")
+
+    if mensal_buy > 0:
+        avaliar("Comprar", mensal_buy)
+    if mensal_build > 0:
+        avaliar("Construir", mensal_build)
+
+    st.caption("💡 Dica: se estiver ‘no limite’, a secção **Sensibilidade & cenários** é onde percebes o risco real.")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
