@@ -1112,84 +1112,10 @@ def ui_comparar():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Conforto mensal (guia)
-# ================================
-def ui_conforto_mensal():
-    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-
-    st.markdown("<h3>💡 Cabe no teu conforto mensal?</h3>", unsafe_allow_html=True)
-    st.caption(
-        "✅ Define um valor de conforto (o máximo que te sentes bem a pagar por mês). "
-        "O RumoCasa compara com a mensalidade do teu cenário."
-    )
-
-    # mensalidades vindas das secções
-    mensal_buy = float(st.session_state.get("mensal_compra", 0.0))
-    mensal_build = float(st.session_state.get("mensal_build", 0.0))
-
-    if mensal_buy <= 0 and mensal_build <= 0:
-        st.info("Preenche **Comprar** e/ou **Construir** para avaliarmos se cabe no teu conforto mensal.")
-        st.markdown("</div>", unsafe_allow_html=True)
-        return
-
-    # input de conforto mensal
-    conforto = st.number_input(
-        "Qual é o teu conforto mensal máximo? (€ / mês)",
-        min_value=0.0,
-        step=25.0,
-        value=float(st.session_state.get("conforto_mensal", 900.0)),
-        help="Valor que te deixa confortável (sem apertos). Não é 'o máximo possível', é o máximo 'tranquilo'.",
-        key="conforto_mensal_input",
-    )
-    st.session_state["conforto_mensal"] = float(conforto)
-
-    st.divider()
-
-    # Avaliar cada opção
-    def avaliar(nome: str, mensal: float):
-        if mensal <= 0:
-            return
-        folga = conforto - mensal
-        pct = (mensal / conforto) if conforto > 0 else 0.0
-
-        st.markdown(f"#### {nome}")
-        col1, col2 = st.columns([1, 1])
-
-        with col1:
-            st.metric("Mensalidade", euro0(mensal))
-        with col2:
-            st.metric("Folga vs conforto", euro0(folga))
-
-        if conforto <= 0:
-            st.warning("Define um conforto mensal acima de 0€ para conseguires comparar.")
-            return
-
-        # Regras simples e claras (guia)
-        if folga >= 0:
-            if pct <= 0.70:
-                st.success("✅ Cabe com folga. Tens margem para imprevistos e variações de taxa.")
-            elif pct <= 0.85:
-                st.success("✅ Cabe — mas já é um compromisso relevante. Atenção a seguros/condomínio e taxa.")
-            else:
-                st.warning("⚠️ Cabe por pouco. Qualquer subida de taxa/custo pode apertar. Vê a sensibilidade abaixo.")
-        else:
-            st.error("❌ Não cabe no teu conforto mensal. Ou baixas o preço, aumentas a entrada, ou ajustas prazo/taxa.")
-
-    if mensal_buy > 0:
-        avaliar("Comprar", mensal_buy)
-    if mensal_build > 0:
-        avaliar("Construir", mensal_build)
-
-    st.caption("💡 Dica: se estiver ‘no limite’, a secção **Sensibilidade & cenários** é onde percebes o risco real.")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# ================================
 # Sensibilidade de juros (compra)
 # ================================
 def ui_sensibilidade():
-    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.markdown(f"<h3>{COPY['sens_title']}</h3>", unsafe_allow_html=True)
+    st.markdown(f"### {COPY['sens_title']}")
     st.caption(COPY["sens_body"])
 
     financiado = float(st.session_state.get("financiado", 0.0))
@@ -1215,8 +1141,6 @@ def ui_sensibilidade():
         st.metric("TAEG base", euro0(prest_base))
     with colC:
         st.metric("TAEG +1pp", euro0(prest_high))
-
-    st.caption("💡 Isto mostra o risco/impacto se as taxas mexerem. Uma diferença de 1pp pode alterar bastante a prestação.")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1507,11 +1431,9 @@ ui_arrendar()
 ui_arrendar_estrategia()
 
 ui_comparar()
+ui_sensibilidade()
 
-ui_conforto_mensal()   # 🧠 decisão emocional / vida real
-ui_sensibilidade()     # 📉 risco financeiro
-
-ui_poupanca()         # 🎯 plano de ação
+ui_poupanca()
 ui_leads()
 ui_parceiros()
 

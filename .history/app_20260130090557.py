@@ -1507,11 +1507,9 @@ ui_arrendar()
 ui_arrendar_estrategia()
 
 ui_comparar()
+ui_sensibilidade()
 
-ui_conforto_mensal()   # 🧠 decisão emocional / vida real
-ui_sensibilidade()     # 📉 risco financeiro
-
-ui_poupanca()         # 🎯 plano de ação
+ui_poupanca()
 ui_leads()
 ui_parceiros()
 
