@@ -1050,7 +1050,7 @@ def ui_arrendar_estrategia():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Comparar (apenas aquisição) — sem gráfico
+# Comparar (apenas aquisição) - BLOCO DECISÃO
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -1061,17 +1061,17 @@ def ui_comparar():
         "porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia."
     )
 
-    upfront_buy   = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
-    upfront_build = float(st.session_state.get("entrada_build", 0.0) or 0.0)
-    mensal_buy    = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
-    mensal_build  = float(st.session_state.get("mensal_build", 0.0) or 0.0)
+    upfront_buy   = float(st.session_state.get("upfront_buy", 0.0))
+    upfront_build = float(st.session_state.get("entrada_build", 0.0))
+    mensal_buy    = float(st.session_state.get("mensal_compra", 0.0))
+    mensal_build  = float(st.session_state.get("mensal_build", 0.0))
 
     if mensal_buy <= 0 and mensal_build <= 0:
         st.info("Preenche **Comprar** e/ou **Construir** para veres a comparação.")
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-
+    # KPIs simples
     col1, col2 = st.columns(2)
     with col1:
         st.metric("À cabeça (comprar)", euro0(upfront_buy))
@@ -1080,23 +1080,63 @@ def ui_comparar():
         st.metric("À cabeça (construir)", euro0(upfront_build))
         st.metric("Mensal (construir)", euro0(mensal_build))
 
-    # vencedor (mensal)
-    if mensal_buy > 0 and mensal_build > 0:
-        if mensal_buy < mensal_build:
-            winner = "Comprar"
-            diff = mensal_build - mensal_buy
-        else:
-            winner = "Construir"
-            diff = mensal_buy - mensal_build
+    st.divider()
 
-        st.markdown("#### 🏆 Melhor escolha neste cenário")
-        st.success(f"Mais leve no orçamento mensal: **{winner}** (diferença ~ {euro0(diff)}/mês)")
+    # Se só uma opção estiver preenchida
+    if mensal_buy <= 0 or mensal_build <= 0:
+        only = "Comprar" if mensal_buy > 0 else "Construir"
+        st.markdown("## 🧭 Decisão neste cenário")
+        st.info(
+            f"Neste momento só tens **{only}** preenchido. "
+            "Preenche a outra opção para o RumoCasa te dizer qual fica mais leve no orçamento."
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
+    # --- DECISÃO (mensalidade)
+    if mensal_buy < mensal_build:
+        winner = "Comprar"
+        diff_m = mensal_build - mensal_buy
     else:
-        st.markdown("#### 🧭 Nota")
-        st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
+        winner = "Construir"
+        diff_m = mensal_buy - mensal_build
+
+    # diferença "à cabeça" (apenas se ambos existirem)
+    diff_u = abs(upfront_buy - upfront_build)
+
+    # força (para linguagem do bloco)
+    base = max(mensal_buy, mensal_build)
+    rel = (diff_m / base) if base > 0 else 0.0
+
+    if rel >= 0.15:
+        label_force = "Diferença forte"
+        emoji = "🔥"
+    elif rel >= 0.07:
+        label_force = "Diferença moderada"
+        emoji = "✅"
+    else:
+        label_force = "Diferença pequena"
+        emoji = "⚖️"
+
+    st.markdown("## 🏆 Melhor escolha neste cenário")
+    st.success(
+        f"**{winner}** fica mais leve no orçamento mensal "
+        f"(~ **{euro0(diff_m)} / mês**).  \n"
+        f"{emoji} {label_force}."
+    )
+
+    # guia rápido (pega na mão)
+    with st.expander("🧠 Porque é que o RumoCasa escolheu isto?", expanded=True):
+        st.markdown(
+            f"""
+- **Critério principal:** mensalidade (o custo que te acompanha todos os meses).
+- **Diferença mensal estimada:** ~ **{euro0(diff_m)} / mês**.
+- **Diferença à cabeça (entrada + impostos/custos):** ~ **{euro0(diff_u)}** *(estimado)*.
+- **Nota:** isto é um *guia*, não uma garantia — custos reais variam por banco, obra, licenças, acabamentos, etc.
+"""
+        )
 
     st.markdown("</div>", unsafe_allow_html=True)
-
 
 # ================================
 # Conforto mensal (guia)

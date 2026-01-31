@@ -1071,7 +1071,6 @@ def ui_comparar():
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-
     col1, col2 = st.columns(2)
     with col1:
         st.metric("À cabeça (comprar)", euro0(upfront_buy))

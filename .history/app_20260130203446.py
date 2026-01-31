@@ -6,70 +6,6 @@ import csv
 import pandas as pd
 import altair as alt
 
-# -------------------------------------------------
-# CONFIG DA PÁGINA
-# -------------------------------------------------
-st.set_page_config(
-    page_title=COPY["app_title"],
-    page_icon="🏡",
-    layout="centered",
-)
-
-st.markdown("""
-<style>
-
-/* ===== FORÇAR TEMA CLARO (ignorar dark mode do sistema) ===== */
-
-html, body, .stApp {
-    background-color: #f5f5f7 !important;
-    color: #111827 !important;
-}
-
-/* Cards principais */
-.section-card {
-    background: #ffffff !important;
-    color: #111827 !important;
-}
-
-/* Títulos */
-h1, h2, h3, h4, h5 {
-    color: #0f172a !important;
-}
-
-/* Texto secundário / descrições */
-p, span, label {
-    color: #374151 !important;
-}
-
-/* Captions do Streamlit */
-[data-testid="stCaptionContainer"] p {
-    color: #4b5563 !important;
-}
-
-/* Inputs */
-input, textarea, select {
-    background-color: #ffffff !important;
-    color: #111827 !important;
-}
-
-/* Métricas */
-[data-testid="metric-container"] {
-    background-color: #ffffff !important;
-    color: #111827 !important;
-    border-radius: 14px;
-}
-
-/* Remover influência do dark mode do SO */
-@media (prefers-color-scheme: dark) {
-    html, body, .stApp {
-        background-color: #f5f5f7 !important;
-        color: #111827 !important;
-    }
-}
-
-</style>
-""", unsafe_allow_html=True)
-
 
 # ================================
 # COPY PREMIUM (PT) — RumoCasa
@@ -198,7 +134,69 @@ TIPS = {
     "comparacao": "No RumoCasa, a comparação prioriza a mensalidade — porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia.",
 }
 
+# -------------------------------------------------
+# CONFIG DA PÁGINA
+# -------------------------------------------------
+st.set_page_config(
+    page_title=COPY["app_title"],
+    page_icon="🏡",
+    layout="centered",
+)
 
+st.markdown("""
+<style>
+
+/* ===== FORÇAR TEMA CLARO (ignorar dark mode do sistema) ===== */
+
+html, body, .stApp {
+    background-color: #f5f5f7 !important;
+    color: #111827 !important;
+}
+
+/* Cards principais */
+.section-card {
+    background: #ffffff !important;
+    color: #111827 !important;
+}
+
+/* Títulos */
+h1, h2, h3, h4, h5 {
+    color: #0f172a !important;
+}
+
+/* Texto secundário / descrições */
+p, span, label {
+    color: #374151 !important;
+}
+
+/* Captions do Streamlit */
+[data-testid="stCaptionContainer"] p {
+    color: #4b5563 !important;
+}
+
+/* Inputs */
+input, textarea, select {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+}
+
+/* Métricas */
+[data-testid="metric-container"] {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-radius: 14px;
+}
+
+/* Remover influência do dark mode do SO */
+@media (prefers-color-scheme: dark) {
+    html, body, .stApp {
+        background-color: #f5f5f7 !important;
+        color: #111827 !important;
+    }
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 
 # -------------------------------------------------
@@ -494,12 +492,6 @@ def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
 
     return v * taxa - parcela
 
-# =====================================================
-# BOOT RESET
-# Garante que a app abre SEM valores antigos no resumo.
-# NÃO mover este bloco para baixo.
-# =====================================================
-
 # ------------------------------
 # RESET na primeira abertura
 # ------------------------------
@@ -550,26 +542,6 @@ st.markdown(
 
 # placeholder da sticky bar
 sticky_placeholder = st.empty()
-
-# -------------------------------------------------
-# Reset manual (Nova simulação)
-# -------------------------------------------------
-colR1, colR2 = st.columns([1, 3])
-with colR1:
-    if st.button("🔄 Nova simulação", use_container_width=True):
-        keys_to_clear = [
-            "upfront_buy", "mensal_compra", "financiado",
-            "entrada_build", "mensal_build",
-            "imt_2025",
-        ]
-        for k in keys_to_clear:
-            st.session_state[k] = 0.0
-
-        # (opcional) limpar também inputs chave
-        # st.session_state.pop(K("comprar", "preco_casa_input"), None)
-        # st.session_state.pop(K("construir", "preco_terreno_input"), None)
-
-        st.rerun()
 
 
 # -------------------------------------------------
@@ -1050,7 +1022,7 @@ def ui_arrendar_estrategia():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Comparar (apenas aquisição) — sem gráfico
+# Comparar (apenas aquisição) - BLOCO DECISÃO
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -1061,17 +1033,17 @@ def ui_comparar():
         "porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia."
     )
 
-    upfront_buy   = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
-    upfront_build = float(st.session_state.get("entrada_build", 0.0) or 0.0)
-    mensal_buy    = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
-    mensal_build  = float(st.session_state.get("mensal_build", 0.0) or 0.0)
+    upfront_buy   = float(st.session_state.get("upfront_buy", 0.0))
+    upfront_build = float(st.session_state.get("entrada_build", 0.0))
+    mensal_buy    = float(st.session_state.get("mensal_compra", 0.0))
+    mensal_build  = float(st.session_state.get("mensal_build", 0.0))
 
     if mensal_buy <= 0 and mensal_build <= 0:
         st.info("Preenche **Comprar** e/ou **Construir** para veres a comparação.")
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-
+    # KPIs simples
     col1, col2 = st.columns(2)
     with col1:
         st.metric("À cabeça (comprar)", euro0(upfront_buy))
@@ -1080,23 +1052,63 @@ def ui_comparar():
         st.metric("À cabeça (construir)", euro0(upfront_build))
         st.metric("Mensal (construir)", euro0(mensal_build))
 
-    # vencedor (mensal)
-    if mensal_buy > 0 and mensal_build > 0:
-        if mensal_buy < mensal_build:
-            winner = "Comprar"
-            diff = mensal_build - mensal_buy
-        else:
-            winner = "Construir"
-            diff = mensal_buy - mensal_build
+    st.divider()
 
-        st.markdown("#### 🏆 Melhor escolha neste cenário")
-        st.success(f"Mais leve no orçamento mensal: **{winner}** (diferença ~ {euro0(diff)}/mês)")
+    # Se só uma opção estiver preenchida
+    if mensal_buy <= 0 or mensal_build <= 0:
+        only = "Comprar" if mensal_buy > 0 else "Construir"
+        st.markdown("## 🧭 Decisão neste cenário")
+        st.info(
+            f"Neste momento só tens **{only}** preenchido. "
+            "Preenche a outra opção para o RumoCasa te dizer qual fica mais leve no orçamento."
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
+    # --- DECISÃO (mensalidade)
+    if mensal_buy < mensal_build:
+        winner = "Comprar"
+        diff_m = mensal_build - mensal_buy
     else:
-        st.markdown("#### 🧭 Nota")
-        st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
+        winner = "Construir"
+        diff_m = mensal_buy - mensal_build
+
+    # diferença "à cabeça" (apenas se ambos existirem)
+    diff_u = abs(upfront_buy - upfront_build)
+
+    # força (para linguagem do bloco)
+    base = max(mensal_buy, mensal_build)
+    rel = (diff_m / base) if base > 0 else 0.0
+
+    if rel >= 0.15:
+        label_force = "Diferença forte"
+        emoji = "🔥"
+    elif rel >= 0.07:
+        label_force = "Diferença moderada"
+        emoji = "✅"
+    else:
+        label_force = "Diferença pequena"
+        emoji = "⚖️"
+
+    st.markdown("## 🏆 Melhor escolha neste cenário")
+    st.success(
+        f"**{winner}** fica mais leve no orçamento mensal "
+        f"(~ **{euro0(diff_m)} / mês**).  \n"
+        f"{emoji} {label_force}."
+    )
+
+    # guia rápido (pega na mão)
+    with st.expander("🧠 Porque é que o RumoCasa escolheu isto?", expanded=True):
+        st.markdown(
+            f"""
+- **Critério principal:** mensalidade (o custo que te acompanha todos os meses).
+- **Diferença mensal estimada:** ~ **{euro0(diff_m)} / mês**.
+- **Diferença à cabeça (entrada + impostos/custos):** ~ **{euro0(diff_u)}** *(estimado)*.
+- **Nota:** isto é um *guia*, não uma garantia — custos reais variam por banco, obra, licenças, acabamentos, etc.
+"""
+        )
 
     st.markdown("</div>", unsafe_allow_html=True)
-
 
 # ================================
 # Conforto mensal (guia)
