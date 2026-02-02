@@ -715,20 +715,24 @@ def ui_arrendar_estrategia():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Comparar (apenas aquisição)
+# Comparar (apenas aquisição) — sem gráfico
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown("<h3>📊 Comparar aquisição</h3>", unsafe_allow_html=True)
-    st.caption("Comparação direta entre Comprar e Construir (aquisição). Arrendar é tratado como fase estratégica, não como “vencedor”.")
 
-    upfront_buy   = float(st.session_state.get("upfront_buy", 0.0))
-    upfront_build = float(st.session_state.get("entrada_build", 0.0))
-    mensal_buy    = float(st.session_state.get("mensal_compra", 0.0))
-    mensal_build  = float(st.session_state.get("mensal_build", 0.0))
+    st.caption(
+        "💡 No RumoCasa, a comparação prioriza a mensalidade — "
+        "porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia."
+    )
+
+    upfront_buy   = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
+    upfront_build = float(st.session_state.get("entrada_build", 0.0) or 0.0)
+    mensal_buy    = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
+    mensal_build  = float(st.session_state.get("mensal_build", 0.0) or 0.0)
 
     if mensal_buy <= 0 and mensal_build <= 0:
-        st.info("Preenche Comprar e/ou Construir para veres a comparação.")
+        st.info("Preenche **Comprar** e/ou **Construir** para veres a comparação.")
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
@@ -740,31 +744,23 @@ def ui_comparar():
         st.metric("À cabeça (construir)", euro0(upfront_build))
         st.metric("Mensal (construir)", euro0(mensal_build))
 
+    # 🏆 decisão clara
     if mensal_buy > 0 and mensal_build > 0:
-        melhor = "Comprar" if mensal_buy < mensal_build else "Construir"
-        melhor_val = min(mensal_buy, mensal_build)
+        if mensal_buy < mensal_build:
+            winner = "Comprar"
+            diff = mensal_build - mensal_buy
+        else:
+            winner = "Construir"
+            diff = mensal_buy - mensal_build
 
-        st.markdown("#### 🏆 Resultado (mensalidade)")
-        st.success(f"Mais leve no orçamento mensal: **{melhor}**  ({euro0(melhor_val)}/mês)")
-
-    data = []
-    if mensal_buy > 0:
-        data.append({"Opção": "Comprar", "Mensal (€)": mensal_buy})
-    if mensal_build > 0:
-        data.append({"Opção": "Construir", "Mensal (€)": mensal_build})
-
-    df = pd.DataFrame(data)
-    chart = (
-        alt.Chart(df)
-        .mark_bar()
-        .encode(
-            x=alt.X("Opção:N", sort=None),
-            y=alt.Y("Mensal (€):Q"),
-            tooltip=["Opção", "Mensal (€)"],
+        st.markdown("#### 🏆 Melhor escolha neste cenário")
+        st.success(
+            f"Mais leve no orçamento mensal: **{winner}** "
+            f"(diferença ~ {euro0(diff)}/mês)"
         )
-        .properties(height=260)
-    )
-    st.altair_chart(chart, use_container_width=True)
+    else:
+        st.markdown("#### 🧭 Nota")
+        st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
