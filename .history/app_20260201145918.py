@@ -6,15 +6,6 @@ import csv
 import pandas as pd
 import altair as alt
 
-if "boot_done" not in st.session_state:
-    st.session_state["boot_done"] = True
-    st.session_state["upfront_buy"] = 0.0
-    st.session_state["mensal_compra"] = 0.0
-    st.session_state["financiado"] = 0.0
-    st.session_state["entrada_build"] = 0.0
-    st.session_state["mensal_build"] = 0.0
-    st.session_state["imt_2025"] = 0.0
-
 # -------------------------------------------------
 # CONFIG DA PÁGINA
 # -------------------------------------------------
