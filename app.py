@@ -105,6 +105,7 @@ if "boot_done" not in st.session_state:
     st.session_state["entrada_build"] = 0.0
     st.session_state["mensal_build"] = 0.0
     st.session_state["imt_2025"] = 0.0
+    st.session_state["has_results"] = False
 
 # ================================
 # TIPS
@@ -488,8 +489,43 @@ sticky_placeholder = st.empty()
 colR1, colR2 = st.columns([1, 3])
 with colR1:
     if st.button("🔄 Nova simulação", use_container_width=True):
-        for k in ["upfront_buy","mensal_compra","financiado","entrada_build","mensal_build","imt_2025"]:
+
+        # 1) limpar resultados
+        keys_to_zero = [
+            "upfront_buy", "mensal_compra", "financiado",
+            "entrada_build", "mensal_build",
+            "imt_2025",
+        ]
+        for k in keys_to_zero:
             st.session_state[k] = 0.0
+
+        # 2) bloquear sticky
+        st.session_state["has_results"] = False
+
+        # 3) limpar inputs (muito importante!)
+        keys_to_pop = [
+            # comprar
+            K("comprar", "preco_casa_input"),
+            K("comprar", "entrada_pct_input"),
+            K("comprar", "poup_atual_input"),
+            K("comprar", "taeg_input"),
+            K("comprar", "prazo_input"),
+            K("comprar", "condo_input"),
+            K("comprar", "seguros_input"),
+            K("comprar", "custo_avaliacao_input"),
+            K("comprar", "obras_mob_input"),
+            K("comprar", "outros_extra_input"),
+
+            # construir (ajusta aos teus nomes reais)
+            K("construir", "preco_terreno_input"),
+            K("construir", "area_m2_input"),
+            K("construir", "custo_m2_input"),
+            K("construir", "imprevistos_pct_input"),
+            K("construir", "entrada_pct_build_input"),
+        ]
+        for k in keys_to_pop:
+            st.session_state.pop(k, None)
+
         st.rerun()
 
 # -------------------------------------------------
@@ -660,6 +696,8 @@ def ui_comprar():
             key=K("comprar", "prazo_input"),
         )
         st.session_state["prazo_anos"] = int(prazo_anos)
+        st.session_state["has_results"] = True
+
 
     # ----------------------------
     # Cálculos
@@ -901,6 +939,8 @@ def ui_construir():
     st.session_state["mensal_build"] = float(mensal_build)
 
     st.markdown("</div>", unsafe_allow_html=True)
+    st.session_state["has_results"] = True
+
 
 # ================================
 # Secção ARRENDAR
