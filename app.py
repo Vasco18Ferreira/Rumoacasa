@@ -12,9 +12,9 @@ import altair as alt
 COPY = {
     "app_title": "RumoCasa 🏡 Planeador Habitacional",
     "app_tagline": "O planeador inteligente para a tua decisão de habitação.",
-
-    "hero_title": "🏠 RumoCasa",
-    "hero_subtitle": "O planeador inteligente para a tua decisão de habitação.",
+    "layout_label": "Disposição",
+    "layout_opt_cols": "Colunas lado a lado",
+    "layout_opt_tabs": "Abas separadas",
     "hero_body": (
         "Decide com números — não com achismos. "
         "Compara Comprar, Construir ou Arrendar estrategicamente, percebe a entrada necessária, "
@@ -95,18 +95,15 @@ st.set_page_config(
 )
 
 # -------------------------------------------------
-# BOOT RESET — garante app limpa ao abrir (1x apenas)
+# BOOT RESET — garante app limpa ao abrir
 # -------------------------------------------------
 if "boot_done" not in st.session_state:
     st.session_state["boot_done"] = True
-
     st.session_state["upfront_buy"] = 0.0
     st.session_state["mensal_compra"] = 0.0
     st.session_state["financiado"] = 0.0
-
     st.session_state["entrada_build"] = 0.0
     st.session_state["mensal_build"] = 0.0
-
     st.session_state["imt_2025"] = 0.0
 
 # ================================
