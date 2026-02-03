@@ -532,6 +532,10 @@ with colR1:
 # Sticky Summary — resumo rápido (só aparece com valores)
 # -------------------------------------------------
 def ui_sticky_summary(container):
+
+# Só mostra a barra se houver uma simulação "ativa"
+    if not st.session_state.get("has_results", False):
+        return    
     upfront_buy = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
     entrada_build = float(st.session_state.get("entrada_build", 0.0) or 0.0)
 
