@@ -99,16 +99,13 @@ st.set_page_config(
 # -------------------------------------------------
 if "boot_done" not in st.session_state:
     st.session_state["boot_done"] = True
-    st.session_state["has_results"] = False
-
     st.session_state["upfront_buy"] = 0.0
     st.session_state["mensal_compra"] = 0.0
     st.session_state["financiado"] = 0.0
-
     st.session_state["entrada_build"] = 0.0
     st.session_state["mensal_build"] = 0.0
     st.session_state["imt_2025"] = 0.0
-
+    st.session_state["has_results"] = False
 
 # ================================
 # TIPS
@@ -535,10 +532,6 @@ with colR1:
 # Sticky Summary — resumo rápido (só aparece com valores)
 # -------------------------------------------------
 def ui_sticky_summary(container):
-
-# Só mostra a barra se houver uma simulação "ativa"
-    if not st.session_state.get("has_results", False):
-        return    
     upfront_buy = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
     entrada_build = float(st.session_state.get("entrada_build", 0.0) or 0.0)
 
@@ -590,36 +583,77 @@ st.markdown("</div>", unsafe_allow_html=True)  # ✅ fechar o card do toggle
 # Secção COMPRAR
 # ================================
 def ui_comprar():
-    
-
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+
     st.markdown(f"### {COPY['buy_title']}")
     st.caption(COPY["buy_body"])
 
-    with st.form("form_comprar", clear_on_submit=False):
-        colL, colR = st.columns(2)
+    colL, colR = st.columns(2)
 
-        with colL:
-            preco_casa = st.number_input(
-                "Preço da casa (€)",
-                step=1000,
-                min_value=10000,
-                value=int(ss_get(K("comprar", "preco_casa"), 200_000)),
-                help=TIPS["preco_casa"],
-                key=K("comprar", "preco_casa_input"),
+    with colL:
+        preco_casa = st.number_input(
+            "Preço da casa (€)",
+            step=1000,
+            min_value=10000,
+            value=int(ss_get(K("comprar", "preco_casa"), 200_000)),
+            help=TIPS["preco_casa"],
+            key=K("comprar", "preco_casa_input"),
+        )
+        st.session_state[K("comprar", "preco_casa")] = preco_casa
+
+        st.caption("💡 " + TIPS["preco_hint"])
+
+        with st.expander("➕ Custos adicionais (opcional, mas recomendado)", expanded=False):
+            custo_avaliacao = st.number_input(
+                "Avaliação + despesas iniciais (€)",
+                min_value=0,
+                step=50,
+                value=int(ss_get(K("comprar", "custo_avaliacao"), 1000)),
+                help=TIPS["custo_avaliacao"],
+                key=K("comprar", "custo_avaliacao_input"),
             )
-            st.caption("💡 " + TIPS["preco_hint"])
+            st.session_state[K("comprar", "custo_avaliacao")] = custo_avaliacao
 
-        with colR:
-            tipo_imovel = st.selectbox(
-                "Tipo de imóvel",
-                ["Habitação Própria Permanente", "Secundária"],
-                help=TIPS["tipo_imovel"],
-                key=K("comprar", "tipo_imovel"),
-                index=0,
+            obras_mob = st.number_input(
+                "Obras / mobiliário inicial (€)",
+                min_value=0,
+                step=250,
+                value=int(ss_get(K("comprar", "obras_mob"), 0)),
+                help=TIPS["obras_mob"],
+                key=K("comprar", "obras_mob_input"),
             )
+            st.session_state[K("comprar", "obras_mob")] = obras_mob
 
-        
+            outros_extra = st.number_input(
+                "Outros custos (€)",
+                min_value=0,
+                step=100,
+                value=int(ss_get(K("comprar", "outros_extra"), 0)),
+                help=TIPS["outros_custos"],
+                key=K("comprar", "outros_extra_input"),
+            )
+            st.session_state[K("comprar", "outros_extra")] = outros_extra
+
+    with colR:
+        st.caption("Perfil do imóvel")
+        tipo_imovel = st.selectbox(
+            "Tipo de imóvel",
+            ["Habitação Própria Permanente", "Secundária"],
+            help=TIPS["tipo_imovel"],
+            key=K("comprar", "tipo_imovel"),
+            index=0,
+        )
+        _ = st.checkbox(
+            "Imóvel novo (IVA incluído)",
+            help=TIPS["novo"],
+            key=K("comprar", "novo"),
+        )
+
+    st.divider()
+
+    colA, colB, colC = st.columns(3)
+
+    with colA:
         entrada_pct = st.number_input(
             "% Entrada",
             min_value=0.0,
@@ -630,7 +664,17 @@ def ui_comprar():
             key=K("comprar", "entrada_pct_input"),
         ) / 100.0
 
+        poup_atual = st.number_input(
+            "Poupança atual (€)",
+            min_value=0,
+            value=int(ss_get(K("comprar", "poup_atual"), 20_000)),
+            step=500,
+            help=TIPS["poup_atual"],
+            key=K("comprar", "poup_atual_input"),
+        )
+        st.session_state["poup_atual"] = float(poup_atual)
 
+    with colB:
         taeg_anual = st.number_input(
             "Taxa anual (TAEG %)",
             min_value=0.0,
@@ -639,8 +683,9 @@ def ui_comprar():
             help=TIPS["taeg"],
             key=K("comprar", "taeg_input"),
         ) / 100.0
+        st.session_state["taeg_anual"] = float(taeg_anual)
 
-
+    with colC:
         prazo_anos = st.number_input(
             "Prazo (anos)",
             min_value=1,
@@ -650,31 +695,8 @@ def ui_comprar():
             help=TIPS["prazo"],
             key=K("comprar", "prazo_input"),
         )
-
-        submitted = st.form_submit_button("✅ Calcular compra")
-
-    # ⬇️ Só calcula quando o utilizador clica
-    if submitted:
-        is_hpp = (tipo_imovel == "Habitação Própria Permanente")
-        imt = calc_imt_2025(preco_casa, hab_pp=is_hpp)
-        selo = 0.008 * float(preco_casa)
-
-        escritura_regs = 1000.0
-        custos_compra = imt + selo + escritura_regs
-
-        entrada = float(preco_casa) * float(entrada_pct)
-        financiado = max(0.0, float(preco_casa) - entrada)
-        prestacao = calc_prestacao(financiado, taeg_anual, prazo_anos)
-
-        st.session_state["upfront_buy"] = float(entrada + custos_compra)
-        st.session_state["mensal_compra"] = float(prestacao)
-        st.session_state["financiado"] = float(financiado)
-        st.session_state["imt_2025"] = float(imt)
+        st.session_state["prazo_anos"] = int(prazo_anos)
         st.session_state["has_results"] = True
-
-        st.success("Cenário de compra calculado ✅")
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
     # ----------------------------

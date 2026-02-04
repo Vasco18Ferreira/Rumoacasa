@@ -6,15 +6,109 @@ import csv
 import pandas as pd
 import altair as alt
 
+# -------------------------------------------------
+# BOOT RESET — garante app limpa ao abrir
+# (não mostrar valores antigos no topo)
+# -------------------------------------------------
+if "boot_done" not in st.session_state:
+    st.session_state["boot_done"] = True
+
+    # comprar (resumo/topo)
+    st.session_state["upfront_buy"] = 0.0
+    st.session_state["mensal_compra"] = 0.0
+    st.session_state["financiado"] = 0.0
+
+    # construir (resumo/topo)
+    st.session_state["entrada_build"] = 0.0
+    st.session_state["mensal_build"] = 0.0
+
+    # auxiliares
+    st.session_state["imt_2025"] = 0.0
+
+
+if "boot_done" not in st.session_state:
+    st.session_state["boot_done"] = True
+    st.session_state["upfront_buy"] = 0.0
+    st.session_state["mensal_compra"] = 0.0
+    st.session_state["financiado"] = 0.0
+    st.session_state["entrada_build"] = 0.0
+    st.session_state["mensal_build"] = 0.0
+    st.session_state["imt_2025"] = 0.0
+
+# -------------------------------------------------
+# CONFIG DA PÁGINA
+# -------------------------------------------------
+st.set_page_config(
+    page_title=COPY["app_title"],
+    page_icon="🏡",
+    layout="centered",
+)
+
+st.markdown("""
+<style>
+
+/* ===== FORÇAR TEMA CLARO (ignorar dark mode do sistema) ===== */
+
+html, body, .stApp {
+    background-color: #f5f5f7 !important;
+    color: #111827 !important;
+}
+
+/* Cards principais */
+.section-card {
+    background: #ffffff !important;
+    color: #111827 !important;
+}
+
+/* Títulos */
+h1, h2, h3, h4, h5 {
+    color: #0f172a !important;
+}
+
+/* Texto secundário / descrições */
+p, span, label {
+    color: #374151 !important;
+}
+
+/* Captions do Streamlit */
+[data-testid="stCaptionContainer"] p {
+    color: #4b5563 !important;
+}
+
+/* Inputs */
+input, textarea, select {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+}
+
+/* Métricas */
+[data-testid="metric-container"] {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-radius: 14px;
+}
+
+/* Remover influência do dark mode do SO */
+@media (prefers-color-scheme: dark) {
+    html, body, .stApp {
+        background-color: #f5f5f7 !important;
+        color: #111827 !important;
+    }
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
 # ================================
 # COPY PREMIUM (PT) — RumoCasa
 # ================================
 COPY = {
     "app_title": "RumoCasa 🏡 Planeador Habitacional",
     "app_tagline": "O planeador inteligente para a tua decisão de habitação.",
-    "layout_label": "Disposição",
-    "layout_opt_cols": "Colunas lado a lado",
-    "layout_opt_tabs": "Abas separadas",
+
+    "hero_title": "🏠 RumoCasa",
+    "hero_subtitle": "O planeador inteligente para a tua decisão de habitação.",
     "hero_body": (
         "Decide com números — não com achismos. "
         "Compara Comprar, Construir ou Arrendar estrategicamente, percebe a entrada necessária, "
@@ -85,36 +179,10 @@ COPY = {
     ),
 }
 
-# -------------------------------------------------
-# CONFIG DA PÁGINA
-# -------------------------------------------------
-st.set_page_config(
-    page_title=COPY["app_title"],
-    page_icon="🏡",
-    layout="centered",
-)
-
-# -------------------------------------------------
-# BOOT RESET — garante app limpa ao abrir
-# -------------------------------------------------
-if "boot_done" not in st.session_state:
-    st.session_state["boot_done"] = True
-    st.session_state["has_results"] = False
-
-    st.session_state["upfront_buy"] = 0.0
-    st.session_state["mensal_compra"] = 0.0
-    st.session_state["financiado"] = 0.0
-
-    st.session_state["entrada_build"] = 0.0
-    st.session_state["mensal_build"] = 0.0
-    st.session_state["imt_2025"] = 0.0
-
-
-# ================================
-# TIPS
-# ================================
 TIPS = {
-
+    # ====================
+    # Comprar
+    # ====================
     "preco_casa": "Preço do imóvel (valor do anúncio). É a base para calcular entrada, IMT e prestação.",
     "preco_hint": "Dica: usa o preço do anúncio. Se for um empreendimento novo, confirma se o valor inclui lugar de garagem/arrecadação e extras.",
     "tipo_imovel": "HPP = Habitação Própria Permanente (IMT geralmente mais baixo). Secundária = férias/investimento (IMT mais alto).",
@@ -126,12 +194,14 @@ TIPS = {
     "condo": "Custos mensais fixos do imóvel (condomínio/manutenção). Pequenos valores acumulam e mexem no orçamento.",
     "seguros": "Seguros associados ao crédito (vida/habitação). Podem variar muito e alterar a mensalidade real.",
 
-
+    # Extras (expander Comprar)
     "custo_avaliacao": "Custos típicos do início do processo: avaliação bancária, comissões iniciais, certidões, etc. (depende do banco).",
     "obras_mob": "Obras e/ou mobiliário inicial. Se a casa estiver pronta a habitar, pode ser 0.",
     "outros_custos": "Qualquer custo extra que queiras considerar (mudança, eletrodomésticos, pequenas reparações, etc.).",
 
-
+    # ====================
+    # Construir (chaves = as do teu ui_construir)
+    # ====================
     "url_terreno": "Link do anúncio do terreno (opcional). Serve só para referência.",
     "preco_terreno": "Preço de compra do terreno. Muitas vezes é pago antes da obra ou no início do processo.",
     "estrutura": "Convencional, LSF ou Modular/3E. Muda custo, tempo e risco. Este simulador é estimativo.",
@@ -145,14 +215,20 @@ TIPS = {
     "cond_man_build": "Custos mensais (seguros/manutenção). Se não fizer sentido, podes pôr 0 no teu caso.",
     "prazo_obra": "Duração estimada da obra. Prazos maiores tendem a aumentar risco e custos indiretos.",
 
-
+    # ====================
+    # Arrendar
+    # ====================
     "renda": "Valor da renda mensal. Serve para perceber quanto sobra para poupar rumo à entrada.",
     "infl_renda": "Estimativa de subida anual da renda. Se não quiseres complicar, usa 0–3%.",
 
-
+    # ====================
+    # Comparação
+    # ====================
     "comparacao": "No RumoCasa, a comparação prioriza a mensalidade — porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia.",
-
 }
+
+
+
 
 # -------------------------------------------------
 # ESTILO GLOBAL RUMOCASA
@@ -174,6 +250,11 @@ st.markdown(
     --rc-gray-100:     #f3f4f6;
 
     --rc-bg:           #f5f5f7;
+}
+
+html, body, .stApp {
+    background-color: var(--rc-bg) !important;
+    color: var(--rc-gray-900) !important;
 }
 
 .stApp { background-color: var(--rc-bg); }
@@ -235,7 +316,8 @@ st.markdown(
 }
 
 .section-card {
-    background: #FFFFFF;
+    background: #FFFFFF !important;
+    color: var(--rc-gray-900) !important;
     border-radius: 18px;
     padding: 1.75rem;
     border: 1px solid #E5E7EB;
@@ -296,6 +378,8 @@ st.markdown(
     border: 1px solid #d1d5db;
     padding: 6px 10px;
     font-size: 0.95rem;
+    background: #ffffff !important;
+    color: var(--rc-gray-900) !important;
 }
 
 .stTextInput > div > div > input:focus,
@@ -325,10 +409,30 @@ st.markdown(
 }
 
 [data-testid="metric-container"] {
-    background: #FFFFFF;
+    background: #FFFFFF !important;
+    color: var(--rc-gray-900) !important;
     padding: 12px;
     border-radius: 12px;
     border: 1px solid #E5E7EB;
+}
+
+/* Garantir texto e ícone do Download sempre visíveis */
+.stDownloadButton > button,
+[data-testid="stDownloadButton"] button {
+    color: #ffffff !important;
+}
+
+/* Ícone SVG dentro do botão */
+.stDownloadButton > button svg,
+[data-testid="stDownloadButton"] button svg {
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+/* Qualquer elemento interno (span, p, etc.) */
+.stDownloadButton > button * ,
+[data-testid="stDownloadButton"] button * {
+    color: #ffffff !important;
 }
 
 .rc-sticky-summary { margin-bottom: 1rem; }
@@ -355,50 +459,15 @@ st.markdown(
     font-weight: 700;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --rc-bg:         #020617;
-        --rc-gray-900:   #e5e7eb;
-        --rc-gray-800:   #e5e7eb;
-        --rc-gray-700:   #9ca3af;
-        --rc-gray-500:   #9ca3af;
-        --rc-gray-200:   #1f2937;
-        --rc-gray-100:   #111827;
-        --rc-green-soft: rgba(34, 197, 94, 0.15);
-    }
-
-    .stApp { background-color: #020617; }
-    .section-card {
-        background: #0b1220;
-        border-color: #1f2937;
-        box-shadow: 0 22px 55px rgba(0,0,0,0.65);
-    }
-    .rc-main-card {
-        background: linear-gradient(180deg, rgba(11,18,32,1) 0%, rgba(11,18,32,0.96) 100%);
-        border-top-color: rgba(45, 212, 191, 0.9);
-    }
-    .rc-tagline {
-        background: #0b1220;
-        color: #e5e7eb;
-        box-shadow: 0 6px 22px rgba(0,0,0,0.65);
-    }
-    .rc-logo-text {
-        background: linear-gradient(90deg, #6ee7b7, #22c55e);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-    .subtitle { color: #cbd5e1; }
-    [data-testid="metric-container"] {
-        background: #0b1220;
-        border-color: #1f2937;
-    }
-    .rc-sticky-inner { background: rgba(22, 163, 74, 0.96); }
+[data-testid="stCaptionContainer"] p {
+    color: var(--rc-gray-900) !important;
+    font-size: 0.95rem !important;
 }
 </style>
 """,
     unsafe_allow_html=True,
 )
+
 
 
 # -------------------------------------------------
@@ -427,8 +496,8 @@ def calc_prestacao(pv, taxa_anual, anos):
         return pv / n
     return (pv * r) / (1 - (1 + r) ** (-n))
 
-
 def guess_price_from_url(url: str):
+    # stub (para futuro)
     return None
 
 def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
@@ -437,7 +506,7 @@ def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
         return 0.0
 
     if not hab_pp:
-        return v * 0.065
+        return v * 0.065  # simplificação para não-HPP
 
     if v <= 97064:
         return 0.0
@@ -454,8 +523,32 @@ def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
 
     return v * taxa - parcela
 
+# =====================================================
+# BOOT RESET
+# Garante que a app abre SEM valores antigos no resumo.
+# NÃO mover este bloco para baixo.
+# =====================================================
+
+# ------------------------------
+# RESET na primeira abertura
+# ------------------------------
+if "boot_done" not in st.session_state:
+    st.session_state["boot_done"] = True
+
+    # valores que aparecem no resumo/topo
+    st.session_state["upfront_buy"] = 0.0
+    st.session_state["mensal_compra"] = 0.0
+    st.session_state["financiado"] = 0.0
+
+    st.session_state["entrada_build"] = 0.0
+    st.session_state["mensal_build"] = 0.0
+
+    # (opcional) também zera os auxiliares
+    st.session_state["imt_2025"] = 0.0
+
+
 # -------------------------------------------------
-# HEADER + CARTÃO INICIAL
+# HEADER + CARTÃO INICIAL (copy premium)
 # -------------------------------------------------
 st.markdown(
     """
@@ -484,6 +577,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# placeholder da sticky bar
 sticky_placeholder = st.empty()
 
 # -------------------------------------------------
@@ -492,61 +586,35 @@ sticky_placeholder = st.empty()
 colR1, colR2 = st.columns([1, 3])
 with colR1:
     if st.button("🔄 Nova simulação", use_container_width=True):
-
-        # 1) limpar resultados
-        keys_to_zero = [
+        keys_to_clear = [
             "upfront_buy", "mensal_compra", "financiado",
             "entrada_build", "mensal_build",
             "imt_2025",
         ]
-        for k in keys_to_zero:
+        for k in keys_to_clear:
             st.session_state[k] = 0.0
 
-        # 2) bloquear sticky
-        st.session_state["has_results"] = False
-
-        # 3) limpar inputs (muito importante!)
-        keys_to_pop = [
-            # comprar
-            K("comprar", "preco_casa_input"),
-            K("comprar", "entrada_pct_input"),
-            K("comprar", "poup_atual_input"),
-            K("comprar", "taeg_input"),
-            K("comprar", "prazo_input"),
-            K("comprar", "condo_input"),
-            K("comprar", "seguros_input"),
-            K("comprar", "custo_avaliacao_input"),
-            K("comprar", "obras_mob_input"),
-            K("comprar", "outros_extra_input"),
-
-            # construir (ajusta aos teus nomes reais)
-            K("construir", "preco_terreno_input"),
-            K("construir", "area_m2_input"),
-            K("construir", "custo_m2_input"),
-            K("construir", "imprevistos_pct_input"),
-            K("construir", "entrada_pct_build_input"),
-        ]
-        for k in keys_to_pop:
-            st.session_state.pop(k, None)
+        # (opcional) limpar também inputs chave
+        # st.session_state.pop(K("comprar", "preco_casa_input"), None)
+        # st.session_state.pop(K("construir", "preco_terreno_input"), None)
 
         st.rerun()
 
-# -------------------------------------------------
-# Sticky Summary — resumo rápido (só aparece com valores)
-# -------------------------------------------------
-def ui_sticky_summary(container):
 
-# Só mostra a barra se houver uma simulação "ativa"
-    if not st.session_state.get("has_results", False):
-        return    
-    upfront_buy = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
+# -------------------------------------------------
+# Sticky Summary — resumo rápido da simulação
+# -------------------------------------------------
+
+def ui_sticky_summary(container):
+    upfront_buy   = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
     entrada_build = float(st.session_state.get("entrada_build", 0.0) or 0.0)
 
     mensal_compra = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
-    mensal_build = float(st.session_state.get("mensal_build", 0.0) or 0.0)
+    mensal_build  = float(st.session_state.get("mensal_build", 0.0) or 0.0)
 
+    # Só escolhe valores se forem > 0
     entrada = 0.0
-    mensal = 0.0
+    mensal  = 0.0
 
     if upfront_buy > 0:
         entrada = upfront_buy
@@ -555,6 +623,7 @@ def ui_sticky_summary(container):
         entrada = entrada_build
         mensal = mensal_build
 
+    # Se ainda não há simulação válida → não mostrar nada
     if entrada <= 0 or mensal <= 0:
         return
 
@@ -583,43 +652,82 @@ modo_ui = st.radio(
     [COPY["layout_opt_cols"], COPY["layout_opt_tabs"]],
     horizontal=True,
 )
-st.markdown("</div>", unsafe_allow_html=True)  # ✅ fechar o card do toggle
-
 
 # ================================
 # Secção COMPRAR
 # ================================
 def ui_comprar():
-    
-
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+
     st.markdown(f"### {COPY['buy_title']}")
     st.caption(COPY["buy_body"])
 
-    with st.form("form_comprar", clear_on_submit=False):
-        colL, colR = st.columns(2)
+    colL, colR = st.columns(2)
 
-        with colL:
-            preco_casa = st.number_input(
-                "Preço da casa (€)",
-                step=1000,
-                min_value=10000,
-                value=int(ss_get(K("comprar", "preco_casa"), 200_000)),
-                help=TIPS["preco_casa"],
-                key=K("comprar", "preco_casa_input"),
+    with colL:
+        preco_casa = st.number_input(
+            "Preço da casa (€)",
+            step=1000,
+            min_value=10000,
+            value=int(ss_get(K("comprar", "preco_casa"), 200_000)),
+            help=TIPS["preco_casa"],
+            key=K("comprar", "preco_casa_input"),
+        )
+        st.session_state[K("comprar", "preco_casa")] = preco_casa
+
+        st.caption("💡 " + TIPS["preco_hint"])
+
+        with st.expander("➕ Custos adicionais (opcional, mas recomendado)", expanded=False):
+            custo_avaliacao = st.number_input(
+                "Avaliação + despesas iniciais (€)",
+                min_value=0,
+                step=50,
+                value=int(ss_get(K("comprar", "custo_avaliacao"), 1000)),
+                help=TIPS["custo_avaliacao"],
+                key=K("comprar", "custo_avaliacao_input"),
             )
-            st.caption("💡 " + TIPS["preco_hint"])
+            st.session_state[K("comprar", "custo_avaliacao")] = custo_avaliacao
 
-        with colR:
-            tipo_imovel = st.selectbox(
-                "Tipo de imóvel",
-                ["Habitação Própria Permanente", "Secundária"],
-                help=TIPS["tipo_imovel"],
-                key=K("comprar", "tipo_imovel"),
-                index=0,
+            obras_mob = st.number_input(
+                "Obras / mobiliário inicial (€)",
+                min_value=0,
+                step=250,
+                value=int(ss_get(K("comprar", "obras_mob"), 0)),
+                help=TIPS["obras_mob"],
+                key=K("comprar", "obras_mob_input"),
             )
+            st.session_state[K("comprar", "obras_mob")] = obras_mob
 
-        
+            outros_extra = st.number_input(
+                "Outros custos (€)",
+                min_value=0,
+                step=100,
+                value=int(ss_get(K("comprar", "outros_extra"), 0)),
+                help=TIPS["outros_custos"],
+                key=K("comprar", "outros_extra_input"),
+            )
+            st.session_state[K("comprar", "outros_extra")] = outros_extra
+
+    with colR:
+        st.caption("Perfil do imóvel")
+        tipo_imovel = st.selectbox(
+            "Tipo de imóvel",
+            ["Habitação Própria Permanente", "Secundária"],
+            help=TIPS["tipo_imovel"],
+            key=K("comprar", "tipo_imovel"),
+            index=0,
+        )
+        _ = st.checkbox(
+            "Imóvel novo (IVA incluído)",
+            help=TIPS["novo"],
+            key=K("comprar", "novo"),
+        )
+
+    st.divider()
+
+    colA, colB, colC = st.columns(3)
+
+    with colA:
         entrada_pct = st.number_input(
             "% Entrada",
             min_value=0.0,
@@ -630,7 +738,17 @@ def ui_comprar():
             key=K("comprar", "entrada_pct_input"),
         ) / 100.0
 
+        poup_atual = st.number_input(
+            "Poupança atual (€)",
+            min_value=0,
+            value=int(ss_get(K("comprar", "poup_atual"), 20_000)),
+            step=500,
+            help=TIPS["poup_atual"],
+            key=K("comprar", "poup_atual_input"),
+        )
+        st.session_state["poup_atual"] = float(poup_atual)
 
+    with colB:
         taeg_anual = st.number_input(
             "Taxa anual (TAEG %)",
             min_value=0.0,
@@ -639,8 +757,9 @@ def ui_comprar():
             help=TIPS["taeg"],
             key=K("comprar", "taeg_input"),
         ) / 100.0
+        st.session_state["taeg_anual"] = float(taeg_anual)
 
-
+    with colC:
         prazo_anos = st.number_input(
             "Prazo (anos)",
             min_value=1,
@@ -650,32 +769,7 @@ def ui_comprar():
             help=TIPS["prazo"],
             key=K("comprar", "prazo_input"),
         )
-
-        submitted = st.form_submit_button("✅ Calcular compra")
-
-    # ⬇️ Só calcula quando o utilizador clica
-    if submitted:
-        is_hpp = (tipo_imovel == "Habitação Própria Permanente")
-        imt = calc_imt_2025(preco_casa, hab_pp=is_hpp)
-        selo = 0.008 * float(preco_casa)
-
-        escritura_regs = 1000.0
-        custos_compra = imt + selo + escritura_regs
-
-        entrada = float(preco_casa) * float(entrada_pct)
-        financiado = max(0.0, float(preco_casa) - entrada)
-        prestacao = calc_prestacao(financiado, taeg_anual, prazo_anos)
-
-        st.session_state["upfront_buy"] = float(entrada + custos_compra)
-        st.session_state["mensal_compra"] = float(prestacao)
-        st.session_state["financiado"] = float(financiado)
-        st.session_state["imt_2025"] = float(imt)
-        st.session_state["has_results"] = True
-
-        st.success("Cenário de compra calculado ✅")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
+        st.session_state["prazo_anos"] = int(prazo_anos)
 
     # ----------------------------
     # Cálculos
@@ -917,8 +1011,6 @@ def ui_construir():
     st.session_state["mensal_build"] = float(mensal_build)
 
     st.markdown("</div>", unsafe_allow_html=True)
-    st.session_state["has_results"] = True
-
 
 # ================================
 # Secção ARRENDAR
