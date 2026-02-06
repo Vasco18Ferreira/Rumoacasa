@@ -98,6 +98,8 @@ st.set_page_config(
 # BOOT RESET — garante app limpa ao abrir
 # -------------------------------------------------
 if "boot_done" not in st.session_state:
+    st.session_state["has_results"] = False
+    st.session_state["active_mode"] = None # "comprar" ou "construir"
     st.session_state["boot_done"] = True
     st.session_state["has_results"] = False
 
@@ -493,24 +495,23 @@ colR1, colR2 = st.columns([1, 3])
 with colR1:
     if st.button("🔄 Nova simulação", use_container_width=True):
 
-        # 1) limpar resultados
-        keys_to_zero = [
+        # 1) remover resultados (melhor que pôr 0.0)
+        keys_to_pop_results = [
             "upfront_buy", "mensal_compra", "financiado",
             "entrada_build", "mensal_build",
             "imt_2025",
+            "has_results",
+            "active_mode",
         ]
-        for k in keys_to_zero:
-            st.session_state[k] = 0.0
+        for k in keys_to_pop_results:
+            st.session_state.pop(k, None)
 
-        # 2) bloquear sticky
-        st.session_state["has_results"] = False
-
-        # 3) limpar inputs (muito importante!)
-        keys_to_pop = [
+        # 2) limpar inputs (muito importante!)
+        keys_to_pop_inputs = [
             # comprar
             K("comprar", "preco_casa_input"),
             K("comprar", "entrada_pct_input"),
-            K("comprar", "poup_atual_input"),
+            
             K("comprar", "taeg_input"),
             K("comprar", "prazo_input"),
             K("comprar", "condo_input"),
@@ -518,6 +519,7 @@ with colR1:
             K("comprar", "custo_avaliacao_input"),
             K("comprar", "obras_mob_input"),
             K("comprar", "outros_extra_input"),
+            K("comprar", "tipo_imovel"),
 
             # construir (ajusta aos teus nomes reais)
             K("construir", "preco_terreno_input"),
@@ -526,7 +528,7 @@ with colR1:
             K("construir", "imprevistos_pct_input"),
             K("construir", "entrada_pct_build_input"),
         ]
-        for k in keys_to_pop:
+        for k in keys_to_pop_inputs:
             st.session_state.pop(k, None)
 
         st.rerun()
@@ -535,26 +537,23 @@ with colR1:
 # Sticky Summary — resumo rápido (só aparece com valores)
 # -------------------------------------------------
 def ui_sticky_summary(container):
-
-# Só mostra a barra se houver uma simulação "ativa"
+    # 1) Só mostra depois de clicar "Calcular"
     if not st.session_state.get("has_results", False):
-        return    
-    upfront_buy = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
-    entrada_build = float(st.session_state.get("entrada_build", 0.0) or 0.0)
+        return
 
-    mensal_compra = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
-    mensal_build = float(st.session_state.get("mensal_build", 0.0) or 0.0)
+    # 2) Decide de onde vêm os valores (comprar vs construir)
+    mode = st.session_state.get("active_mode")
 
-    entrada = 0.0
-    mensal = 0.0
+    if mode == "comprar":
+        entrada = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
+        mensal  = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
+    elif mode == "construir":
+        entrada = float(st.session_state.get("entrada_build", 0.0) or 0.0)
+        mensal  = float(st.session_state.get("mensal_build", 0.0) or 0.0)
+    else:
+        return
 
-    if upfront_buy > 0:
-        entrada = upfront_buy
-        mensal = mensal_compra
-    elif entrada_build > 0:
-        entrada = entrada_build
-        mensal = mensal_build
-
+    # 3) Se ainda não há valores válidos, não mostrar
     if entrada <= 0 or mensal <= 0:
         return
 
@@ -589,14 +588,17 @@ st.markdown("</div>", unsafe_allow_html=True)  # ✅ fechar o card do toggle
 # ================================
 # Secção COMPRAR
 # ================================
-def ui_comprar():
-    
 
+def ui_comprar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown(f"### {COPY['buy_title']}")
     st.caption(COPY["buy_body"])
 
+    # ----------------------------
+    # FORM (inputs)
+    # ----------------------------
     with st.form("form_comprar", clear_on_submit=False):
+
         colL, colR = st.columns(2)
 
         with colL:
@@ -619,106 +621,109 @@ def ui_comprar():
                 index=0,
             )
 
-        
-        entrada_pct = st.number_input(
-            "% Entrada",
-            min_value=0.0,
-            max_value=100.0,
-            value=float(ss_get(K("comprar", "entrada_pct"), 10.0)),
-            step=1.0,
-            help=TIPS["entrada_pct"],
-            key=K("comprar", "entrada_pct_input"),
-        ) / 100.0
+        colA, colB, colC = st.columns(3)
 
+        with colA:
+            entrada_pct = st.number_input(
+                "% Entrada",
+                min_value=0.0,
+                max_value=100.0,
+                value=float(ss_get(K("comprar", "entrada_pct"), 10.0)),
+                step=1.0,
+                help=TIPS["entrada_pct"],
+                key=K("comprar", "entrada_pct_input"),
+            ) / 100.0
 
-        taeg_anual = st.number_input(
-            "Taxa anual (TAEG %)",
-            min_value=0.0,
-            value=float(ss_get(K("comprar", "taeg"), 4.0)),
-            step=0.1,
-            help=TIPS["taeg"],
-            key=K("comprar", "taeg_input"),
-        ) / 100.0
+        with colB:
+            taeg_anual = st.number_input(
+                "Taxa anual (TAEG %)",
+                min_value=0.0,
+                value=float(ss_get(K("comprar", "taeg"), 4.0)),
+                step=0.1,
+                help=TIPS["taeg"],
+                key=K("comprar", "taeg_input"),
+            ) / 100.0
 
+        with colC:
+            prazo_anos = st.number_input(
+                "Prazo (anos)",
+                min_value=1,
+                max_value=50,
+                value=int(ss_get(K("comprar", "prazo"), 30)),
+                step=1,
+                help=TIPS["prazo"],
+                key=K("comprar", "prazo_input"),
+            )
 
-        prazo_anos = st.number_input(
-            "Prazo (anos)",
-            min_value=1,
-            max_value=50,
-            value=int(ss_get(K("comprar", "prazo"), 30)),
-            step=1,
-            help=TIPS["prazo"],
-            key=K("comprar", "prazo_input"),
-        )
+        with st.expander("➕ Custos adicionais (opcional, mas recomendado)", expanded=False):
+            custo_avaliacao = st.number_input(
+                "Avaliação + despesas iniciais (€)",
+                min_value=0,
+                step=50,
+                value=int(ss_get(K("comprar", "custo_avaliacao"), 1000)),
+                help=TIPS["custo_avaliacao"],
+                key=K("comprar", "custo_avaliacao_input"),
+            )
+            obras_mob = st.number_input(
+                "Obras / mobiliário inicial (€)",
+                min_value=0,
+                step=250,
+                value=int(ss_get(K("comprar", "obras_mob"), 0)),
+                help=TIPS["obras_mob"],
+                key=K("comprar", "obras_mob_input"),
+            )
+            outros_extra = st.number_input(
+                "Outros custos (€)",
+                min_value=0,
+                step=100,
+                value=int(ss_get(K("comprar", "outros_extra"), 0)),
+                help=TIPS["outros_custos"],
+                key=K("comprar", "outros_extra_input"),
+            )
 
-        submitted = st.form_submit_button("✅ Calcular compra")
+        colX, colY = st.columns(2)
+        with colX:
+            condo = st.number_input(
+                "Condomínio / Manutenção (€/mês)",
+                min_value=0.0,
+                value=float(ss_get(K("comprar", "condo"), 0.0)),
+                step=5.0,
+                help=TIPS["condo"],
+                key=K("comprar", "condo_input"),
+            )
+            seguros = st.number_input(
+                "Seguros (€/mês)",
+                min_value=0.0,
+                value=float(ss_get(K("comprar", "seguros"), 0.0)),
+                step=5.0,
+                help=TIPS["seguros"],
+                key=K("comprar", "seguros_input"),
+            )
 
-    # ⬇️ Só calcula quando o utilizador clica
-    if submitted:
-        is_hpp = (tipo_imovel == "Habitação Própria Permanente")
-        imt = calc_imt_2025(preco_casa, hab_pp=is_hpp)
-        selo = 0.008 * float(preco_casa)
+        with colY:
+            st.caption("💡 Dica: custos mensais “pequenos” (condomínio/seguros) mudam a realidade do orçamento.")
 
-        escritura_regs = 1000.0
-        custos_compra = imt + selo + escritura_regs
-
-        entrada = float(preco_casa) * float(entrada_pct)
-        financiado = max(0.0, float(preco_casa) - entrada)
-        prestacao = calc_prestacao(financiado, taeg_anual, prazo_anos)
-
-        st.session_state["upfront_buy"] = float(entrada + custos_compra)
-        st.session_state["mensal_compra"] = float(prestacao)
-        st.session_state["financiado"] = float(financiado)
-        st.session_state["imt_2025"] = float(imt)
-        st.session_state["has_results"] = True
-
-        st.success("Cenário de compra calculado ✅")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
+        submitted = st.form_submit_button("✅ Calcular compra", use_container_width=True)
 
     # ----------------------------
-    # Cálculos
+    # CÁLCULOS (só quando clica)
     # ----------------------------
+    if not submitted:
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
     is_hpp = (tipo_imovel == "Habitação Própria Permanente")
     imt = calc_imt_2025(preco_casa, hab_pp=is_hpp)
     selo = 0.008 * float(preco_casa)
 
     escritura_regs = 1000.0
 
-    custo_avaliacao = float(st.session_state.get(K("comprar", "custo_avaliacao"), 1000.0))
-    obras_mob = float(st.session_state.get(K("comprar", "obras_mob"), 0.0))
-    outros_extra = float(st.session_state.get(K("comprar", "outros_extra"), 0.0))
-
-    custos_extra = custo_avaliacao + obras_mob + outros_extra
-    custos_compra = imt + selo + escritura_regs + custos_extra
+    custos_extra = float(custo_avaliacao) + float(obras_mob) + float(outros_extra)
+    custos_compra = float(imt) + float(selo) + float(escritura_regs) + float(custos_extra)
 
     entrada = float(preco_casa) * float(entrada_pct)
     financiado = max(0.0, float(preco_casa) - entrada)
     prestacao = calc_prestacao(financiado, taeg_anual, prazo_anos)
-
-    colX, colY = st.columns(2)
-
-    with colX:
-        condo = st.number_input(
-            "Condomínio / Manutenção (€/mês)",
-            min_value=0.0,
-            value=float(ss_get(K("comprar", "condo"), 0.0)),
-            step=5.0,
-            help=TIPS["condo"],
-            key=K("comprar", "condo_input"),
-        )
-        seguros = st.number_input(
-            "Seguros (€/mês)",
-            min_value=0.0,
-            value=float(ss_get(K("comprar", "seguros"), 0.0)),
-            step=5.0,
-            help=TIPS["seguros"],
-            key=K("comprar", "seguros_input"),
-        )
-
-    with colY:
-        st.caption("💡 Dica: custos mensais “pequenos” (condomínio/seguros) mudam a realidade do orçamento.")
 
     mensal_compra = float(prestacao) + float(condo) + float(seguros)
     upfront_buy = float(entrada) + float(custos_compra)
@@ -729,17 +734,21 @@ def ui_comprar():
         st.caption(
             f"IMT 2025: {euro0(imt)} | Selo: {euro0(selo)} | Escritura/registos: {euro0(escritura_regs)} | Extras: {euro0(custos_extra)}"
         )
-
+    
     with col2:
         st.metric("Prestação (crédito)", euro0(prestacao))
         st.metric("Mensal total (com custos)", euro0(mensal_compra))
 
+    # Guardar resultados (para sticky/comparar)
     st.session_state["upfront_buy"] = float(upfront_buy)
     st.session_state["mensal_compra"] = float(mensal_compra)
     st.session_state["financiado"] = float(financiado)
-    st.session_state["condo"] = float(condo)
-    st.session_state["seguros"] = float(seguros)
+
     st.session_state["imt_2025"] = float(imt)
+    st.session_state["has_results"] = True
+    st.session_state["active_mode"] = "comprar"
+
+    st.success("Cenário de compra calculado ✅")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
