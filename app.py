@@ -488,6 +488,15 @@ st.markdown(
 
 sticky_placeholder = st.empty()
 
+# Estado ativo (comprar / construir)
+# 👉 TEM de vir AQUI
+# -------------------------------------------------
+if "active_mode" not in st.session_state:
+    st.session_state["active_mode"] = None
+
+if "has_results" not in st.session_state:
+    st.session_state["has_results"] = False
+
 # -------------------------------------------------
 # Reset manual (Nova simulação)
 # -------------------------------------------------
@@ -496,22 +505,20 @@ with colR1:
     if st.button("🔄 Nova simulação", use_container_width=True):
 
         # 1) remover resultados (melhor que pôr 0.0)
-        keys_to_pop_results = [
-            "upfront_buy", "mensal_compra", "financiado",
-            "entrada_build", "mensal_build",
-            "imt_2025",
-            "has_results",
-            "active_mode",
-        ]
-        for k in keys_to_pop_results:
-            st.session_state.pop(k, None)
+        keys_to_zero = [
+    "upfront_buy", "mensal_compra", "financiado",
+    "entrada_build", "mensal_build",
+]
+for k in keys_to_zero:
+    st.session_state[k] = 0.0
+
 
         # 2) limpar inputs (muito importante!)
-        keys_to_pop_inputs = [
+    keys_to_pop_inputs = [
             # comprar
             K("comprar", "preco_casa_input"),
             K("comprar", "entrada_pct_input"),
-            
+
             K("comprar", "taeg_input"),
             K("comprar", "prazo_input"),
             K("comprar", "condo_input"),
@@ -528,10 +535,10 @@ with colR1:
             K("construir", "imprevistos_pct_input"),
             K("construir", "entrada_pct_build_input"),
         ]
-        for k in keys_to_pop_inputs:
+    for k in keys_to_pop_inputs:
             st.session_state.pop(k, None)
 
-        st.rerun()
+    st.rerun()
 
 # -------------------------------------------------
 # Sticky Summary — resumo rápido (só aparece com valores)
@@ -753,143 +760,247 @@ def ui_comprar():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Secção CONSTRUIR
+# Secção CONSTRUIR (v2)
 # ================================
 def ui_construir():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown(f"### {COPY['build_title']}")
     st.caption(COPY["build_body"])
 
-    colL, colR = st.columns(2)
+    # ----------------------------
+    # Tabela de sistemas (MVP 2026)
+    # Defaults são EDITÁVEIS pelo utilizador
+    # ----------------------------
+    SYSTEMS = {
+        "Convencional": {
+            "label": "Convencional",
+            "custo_m2_default": 1100,   # estimativo (editável)
+            "fator": 1.00,
+            "prazo_meses_default": 14,
+            "pros": [
+                "Mais comum e fácil de comparar orçamentos",
+                "Boa aceitação bancária/seguradoras",
+                "Flexível em projeto e alterações"
+            ],
+            "cons": [
+                "Normalmente mais lento",
+                "Maior risco de derrapagens (mão de obra/atrasos)",
+                "Dependente de equipas e disponibilidade local"
+            ],
+        },
+        "LSF (aço leve)": {
+            "label": "LSF (aço leve)",
+            "custo_m2_default": 1000,   # estimativo (editável)
+            "fator": 0.95,
+            "prazo_meses_default": 10,
+            "pros": [
+                "Construção mais rápida e previsível",
+                "Obra mais “seca” (menos tempos de cura)",
+                "Boa eficiência térmica/acústica (depende do sistema)"
+            ],
+            "cons": [
+                "Qualidade depende MUITO do fabricante/montagem",
+                "Menos fornecedores (comparação de preço pode ser difícil)",
+                "Detalhes de pontes térmicas/isolamentos são críticos"
+            ],
+        },
+        "Modular / 3E": {
+            "label": "Modular / 3E",
+            "custo_m2_default": 950,    # estimativo (editável)
+            "fator": 0.92,
+            "prazo_meses_default": 8,
+            "pros": [
+                "Prazo geralmente mais curto",
+                "Maior controlo industrial (qualidade mais consistente)",
+                "Menos imprevistos em obra (depende do modelo)"
+            ],
+            "cons": [
+                "Logística/transportes podem pesar (acessos ao terreno)",
+                "Limitações de personalização (em alguns fornecedores)",
+                "Prazos dependem da fila de produção"
+            ],
+        },
+        "Madeira / CLT": {
+            "label": "Madeira / CLT",
+            "custo_m2_default": 1200,   # estimativo (editável)
+            "fator": 1.03,
+            "prazo_meses_default": 9,
+            "pros": [
+                "Muito rápida (sistemas industrializados)",
+                "Ótimo desempenho térmico e conforto",
+                "Pegada carbónica potencialmente menor"
+            ],
+            "cons": [
+                "Pode ser mais caro (material/acabamentos)",
+                "Exige bom projeto de humidades/ventilação",
+                "Nem todos os bancos/seguros tratam igual (varia)"
+            ],
+        },
+    }
 
-    with colL:
-        url_terreno = st.text_input(
-            COPY["build_link_label"],
-            help=TIPS["url_terreno"],
-            key=K("construir", "url_terreno"),
-        )
+    # ----------------------------
+    # FORM (só calcula ao clicar)
+    # ----------------------------
+    with st.form("form_construir", clear_on_submit=False):
+        colL, colR = st.columns(2)
 
-        preco_terreno = st.number_input(
-            "Preço do terreno (€)",
-            step=1000,
-            min_value=0,
-            value=int(ss_get(K("construir", "preco_terreno"), 50_000)),
-            help=TIPS["preco_terreno"],
-            key=K("construir", "preco_terreno_input"),
-        )
-        st.session_state[K("construir", "preco_terreno")] = preco_terreno
+        with colL:
+            url_terreno = st.text_input(
+                COPY["build_link_label"],
+                help=TIPS["url_terreno"],
+                key=K("construir", "url_terreno"),
+            )
 
-    with colR:
-        estrutura = st.selectbox(
-            "Sistema construtivo",
-            ["Convencional", "LSF (aço leve)", "Modular / 3E"],
-            help=TIPS["estrutura"],
-            key=K("construir", "estrutura"),
-            index=0,
-        )
+            preco_terreno = st.number_input(
+                "Preço do terreno (€)",
+                step=1000,
+                min_value=0,
+                value=int(ss_get(K("construir", "preco_terreno"), 50_000)),
+                help=TIPS["preco_terreno"],
+                key=K("construir", "preco_terreno_input"),
+            )
 
-        area_m2 = st.number_input(
-            "Área útil (m²)",
-            min_value=40,
-            value=int(ss_get(K("construir", "area_m2"), 120)),
-            step=5,
-            help=TIPS["area_m2"],
-            key=K("construir", "area_m2_input"),
-        )
+        with colR:
+            estrutura = st.selectbox(
+                "Sistema construtivo",
+                list(SYSTEMS.keys()),
+                help=TIPS["estrutura"],
+                key=K("construir", "estrutura"),
+                index=0,
+            )
 
-        custo_m2 = st.number_input(
-            "Custo base construção (€/m²)",
-            min_value=600,
-            value=int(ss_get(K("construir", "custo_m2"), 1100)),
-            step=50,
-            help=TIPS["custo_m2"],
-            key=K("construir", "custo_m2_input"),
-        )
+            area_m2 = st.number_input(
+                "Área útil (m²)",
+                min_value=40,
+                value=int(ss_get(K("construir", "area_m2"), 120)),
+                step=5,
+                help=TIPS["area_m2"],
+                key=K("construir", "area_m2_input"),
+            )
 
-    col1, col2, col3 = st.columns(3)
+            # default do custo/m2 vem do sistema, mas é editável
+            custo_m2_default = int(SYSTEMS[estrutura]["custo_m2_default"])
+            custo_m2 = st.number_input(
+                "Custo base construção (€/m²)",
+                min_value=600,
+                value=int(ss_get(K("construir", "custo_m2"), custo_m2_default)),
+                step=50,
+                help=TIPS["custo_m2"],
+                key=K("construir", "custo_m2_input"),
+            )
 
-    with col1:
-        iva_reduzido = st.checkbox(
-            "IVA reduzido (ex.: 6%)",
-            value=bool(ss_get(K("construir", "iva_red"), True)),
-            help=TIPS["iva_reduzido"],
-            key=K("construir", "iva_reduzido"),
-        )
+        # --- prós/contras do sistema ---
+        st.markdown("##### ✅ Prós & ❗Contras (para decidir rápido)")
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("**Vantagens**")
+            for p in SYSTEMS[estrutura]["pros"]:
+                st.write(f"• {p}")
+        with c2:
+            st.markdown("**Pontos de atenção**")
+            for c in SYSTEMS[estrutura]["cons"]:
+                st.write(f"• {c}")
 
-        imprevistos_pct = st.slider(
-            "Imprevistos (%)",
-            0,
-            20,
-            value=int(ss_get(K("construir", "imp_pct"), 10)),
-            help=TIPS["imprevistos_pct"],
-            key=K("construir", "imp_prev"),
-        )
+        st.divider()
 
-    with col2:
-        projetos_lic = st.number_input(
-            "Projetos & Licenças (€)",
-            value=float(ss_get(K("construir", "proj"), 8000.0)),
-            step=1000.0,
-            min_value=0.0,
-            help=TIPS["projetos_lic"],
-            key=K("construir", "proj_input"),
-        )
+        col1, col2, col3 = st.columns(3)
 
-    with col3:
-        fiscalizacao = st.number_input(
-            "Fiscalização/Coordenação (€)",
-            value=float(ss_get(K("construir", "fisc"), 3000.0)),
-            step=500.0,
-            min_value=0.0,
-            help=TIPS["fiscalizacao"],
-            key=K("construir", "fisc_input"),
-        )
+        with col1:
+            iva_reduzido = st.checkbox(
+                "IVA reduzido (ex.: 6%)",
+                value=bool(ss_get(K("construir", "iva_red"), False)),
+                help=TIPS["iva_reduzido"],
+                key=K("construir", "iva_reduzido"),
+            )
 
-    st.divider()
+            imprevistos_pct = st.slider(
+                "Imprevistos (%)",
+                0,
+                20,
+                value=int(ss_get(K("construir", "imp_pct"), 10)),
+                help=TIPS["imprevistos_pct"],
+                key=K("construir", "imp_prev"),
+            )
 
-    colM, colN = st.columns(2)
+        with col2:
+            projetos_lic = st.number_input(
+                "Projetos & Licenças (€)",
+                value=float(ss_get(K("construir", "proj"), 8000.0)),
+                step=1000.0,
+                min_value=0.0,
+                help=TIPS["projetos_lic"],
+                key=K("construir", "proj_input"),
+            )
 
-    with colM:
-        entrada_pct_build = st.slider(
-            "% Entrada (construção)",
-            0.0,
-            50.0,
-            value=float(ss_get(K("construir", "entrada_pct_build"), 10.0)),
-            step=1.0,
-            help=TIPS["entrada_pct_build"],
-            key=K("construir", "entrada_constr"),
-        ) / 100.0
+        with col3:
+            fiscalizacao = st.number_input(
+                "Fiscalização/Coordenação (€)",
+                value=float(ss_get(K("construir", "fisc"), 3000.0)),
+                step=500.0,
+                min_value=0.0,
+                help=TIPS["fiscalizacao"],
+                key=K("construir", "fisc_input"),
+            )
 
-        cond_man_build = st.number_input(
-            "Seguros + Manutenção (€/mês)",
-            value=float(ss_get(K("construir", "cond_build"), 40.0)),
-            step=5.0,
-            min_value=0.0,
-            help=TIPS["cond_man_build"],
-            key=K("construir", "cond_build_input"),
-        )
+        st.divider()
 
-    with colN:
-        _ = st.slider(
-            "Prazo de obra (meses)",
-            6,
-            24,
-            value=int(ss_get(K("construir", "obra_meses"), 12)),
-            help=TIPS["prazo_obra"],
-            key=K("construir", "prazo_obra"),
-        )
+        colM, colN = st.columns(2)
 
-    # --- Ajuste simples por sistema construtivo (MVP) ---
-    fator = 1.00
-    if estrutura == "LSF (aço leve)":
-        fator = 0.95
-    elif estrutura == "Modular / 3E":
-        fator = 0.90
+        with colM:
+            entrada_pct_build = st.slider(
+                "% Entrada (construção)",
+                0.0,
+                50.0,
+                value=float(ss_get(K("construir", "entrada_pct_build"), 10.0)),
+                step=1.0,
+                help=TIPS["entrada_pct_build"],
+                key=K("construir", "entrada_constr"),
+            ) / 100.0
+
+            cond_man_build = st.number_input(
+                "Seguros + Manutenção (€/mês)",
+                value=float(ss_get(K("construir", "cond_build"), 40.0)),
+                step=5.0,
+                min_value=0.0,
+                help=TIPS["cond_man_build"],
+                key=K("construir", "cond_build_input"),
+            )
+
+        with colN:
+            prazo_default = int(SYSTEMS[estrutura]["prazo_meses_default"])
+            prazo_obra_meses = st.slider(
+                "Prazo de obra (meses)",
+                6,
+                24,
+                value=int(ss_get(K("construir", "obra_meses"), prazo_default)),
+                help=TIPS["prazo_obra"],
+                key=K("construir", "prazo_obra"),
+            )
+
+        submitted = st.form_submit_button("✅ Calcular construção")
+
+    # ----------------------------
+    # Só calcula quando clicas
+    # ----------------------------
+    if not submitted:
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
+    # Marca modo e resultados (para sticky)
+    st.session_state["active_mode"] = "construir"
+    st.session_state["has_results"] = True
+
+    # --- Ajuste por sistema ---
+    fator = float(SYSTEMS[estrutura]["fator"])
 
     custo_construcao_base = float(area_m2) * float(custo_m2) * fator
+
+    # IVA (MVP): 6% se checkbox, senão 23%
     iva_pct = 0.06 if iva_reduzido else 0.23
-    imprevistos = custo_construcao_base * (float(imprevistos_pct) / 100.0)
+
     iva_construcao = custo_construcao_base * float(iva_pct)
+
+    imprevistos = custo_construcao_base * (float(imprevistos_pct) / 100.0)
 
     total_construcao = (
         float(preco_terreno)
@@ -900,7 +1011,7 @@ def ui_construir():
         + float(fiscalizacao)
     )
 
-    # Usa taxa/prazo da secção Comprar (para comparar com a mesma base)
+    # Usa taxa/prazo da secção Comprar (se existir) para comparar “base igual”
     taeg_anual = float(st.session_state.get("taeg_anual", 0.04))
     prazo_anos = int(st.session_state.get("prazo_anos", 30))
 
@@ -922,11 +1033,13 @@ def ui_construir():
         st.metric("Prestação estimada (crédito)", euro0(prest_build))
         st.caption(f"Mensal total (com seguros/manut.): {euro0(mensal_build)}")
 
+    # guardar resultados para comparação + sticky
     st.session_state["entrada_build"] = float(entrada_build)
     st.session_state["mensal_build"] = float(mensal_build)
 
+    st.success("Cenário de construção calculado ✅")
     st.markdown("</div>", unsafe_allow_html=True)
-    st.session_state["has_results"] = True
+
 
 
 # ================================
