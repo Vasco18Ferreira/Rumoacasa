@@ -505,7 +505,7 @@ colR1, colR2 = st.columns([1, 3])
 with colR1:
     if st.button("🔄 Nova simulação", use_container_width=True):
 
-        # 1) Zerar resultados (números do topo + comparação)
+        # 1) limpar resultados (pôr a 0)
         keys_to_zero = [
             "upfront_buy", "mensal_compra", "financiado",
             "entrada_build", "mensal_build",
@@ -514,36 +514,35 @@ with colR1:
         for k in keys_to_zero:
             st.session_state[k] = 0.0
 
-        # 2) Estado da UI
+        # 2) estado da UI
         st.session_state["has_results"] = False
         st.session_state["active_mode"] = None
 
-        # 3) Limpar inputs (para não ficarem valores antigos nos campos)
-keys_to_pop = [
-    # comprar
-    K("comprar", "preco_casa_input"),
-    K("comprar", "entrada_pct_input"),
-    K("comprar", "taeg_input"),
-    K("comprar", "prazo_input"),
-    K("comprar", "condo_input"),
-    K("comprar", "seguros_input"),
-    K("comprar", "custo_avaliacao_input"),
-    K("comprar", "obras_mob_input"),
-    K("comprar", "outros_extra_input"),
+        # 3) limpar inputs (para não ficarem valores antigos nos campos)
+        keys_to_pop = [
+            # comprar
+            K("comprar", "preco_casa_input"),
+            K("comprar", "entrada_pct_input"),
+            K("comprar", "taeg_input"),
+            K("comprar", "prazo_input"),
+            K("comprar", "condo_input"),
+            K("comprar", "seguros_input"),
+            K("comprar", "custo_avaliacao_input"),
+            K("comprar", "obras_mob_input"),
+            K("comprar", "outros_extra_input"),
 
-    # construir (confirma se estas keys existem no teu ui_construir)
-    K("construir", "preco_terreno_input"),
-    K("construir", "area_m2_input"),
-    K("construir", "custo_m2_input"),
-    K("construir", "proj_input"),
-    K("construir", "fisc_input"),
-    K("construir", "cond_build_input"),
-]
+            # construir
+            K("construir", "preco_terreno_input"),
+            K("construir", "area_m2_input"),
+            K("construir", "custo_m2_input"),
+            K("construir", "proj_input"),
+            K("construir", "fisc_input"),
+            K("construir", "cond_build_input"),
+        ]
+        for k in keys_to_pop:
+            st.session_state.pop(k, None)
 
-for k in keys_to_pop:
-    st.session_state.pop(k, None)
-
-st.rerun()
+        st.rerun()
 
 # -------------------------------------------------
 # Sticky Summary — resumo rápido (só aparece com valores)
