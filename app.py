@@ -537,7 +537,6 @@ with colR1:
             K("comprar", "outros_extra_input"),
 
             # construir
-            K("construir", "preco_terreno_input"),
             K("construir", "area_m2_input"),
             K("construir", "custo_m2_input"),
             K("construir", "proj_input"),
@@ -853,14 +852,8 @@ def ui_construir():
     # -------------------------------------------------
     # 1) ESTA PARTE FICA FORA DO FORM → fica dinâmica
     # -------------------------------------------------
-    colTopL, colTopR = st.columns(2)
-    with colTopL:
-        url_terreno = st.text_input(
-            COPY["build_link_label"],
-            help=TIPS["url_terreno"],
-            key=K("construir", "url_terreno"),
-        )
-
+    colTopR = st.container()
+    
     with colTopR:
         estrutura = st.selectbox(
             "Sistema construtivo",
@@ -1036,7 +1029,7 @@ def ui_construir():
     mensal_build = float(prest_build) + float(cond_man_build)
 
     colX, colY = st.columns(2)
-    
+
     with colX:
         st.metric("Total do projeto (estimado)", euro0(total_construcao))
         st.caption(
