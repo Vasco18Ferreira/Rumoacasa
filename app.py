@@ -488,14 +488,18 @@ st.markdown(
 
 sticky_placeholder = st.empty()
 
-# Estado ativo (comprar / construir)
-# 👉 TEM de vir AQUI
+# -------------------------------------------------
+# Estado UI (uma vez)
 # -------------------------------------------------
 if "active_mode" not in st.session_state:
     st.session_state["active_mode"] = None
 
-if "has_results" not in st.session_state:
-    st.session_state["has_results"] = False
+if "buy_done" not in st.session_state:
+    st.session_state["buy_done"] = False
+
+if "build_done" not in st.session_state:
+    st.session_state["build_done"] = False
+
 
 # -------------------------------------------------
 # Reset manual (Nova simulação)
@@ -507,15 +511,16 @@ with colR1:
 
         # 1) limpar resultados (pôr a 0)
         keys_to_zero = [
-            "upfront_buy", "mensal_compra", "financiado",
+            "upfront_buy", "mensal_compra", "financiado", "imt_2025",
             "entrada_build", "mensal_build",
-            "imt_2025",
+            
         ]
         for k in keys_to_zero:
             st.session_state[k] = 0.0
 
         # 2) estado da UI
-        st.session_state["has_results"] = False
+        st.session_state["buy_done"] = False
+        st.session_state["build_done"] = False
         st.session_state["active_mode"] = None
 
         # 3) limpar inputs (para não ficarem valores antigos nos campos)
@@ -544,27 +549,25 @@ with colR1:
 
         st.rerun()
 
+
 # -------------------------------------------------
-# Sticky Summary — resumo rápido (só aparece com valores)
+# Sticky Summary — último calculado
 # -------------------------------------------------
 def ui_sticky_summary(container):
-    # 1) Só mostra depois de clicar "Calcular"
-    if not st.session_state.get("has_results", False):
-        return
 
-    # 2) Decide de onde vêm os valores (comprar vs construir)
     mode = st.session_state.get("active_mode")
 
-    if mode == "comprar":
+    if mode == "comprar" and st.session_state.get("buy_done", False):
         entrada = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
         mensal  = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
-    elif mode == "construir":
+
+    elif mode == "construir" and st.session_state.get("build_done", False):
         entrada = float(st.session_state.get("entrada_build", 0.0) or 0.0)
         mensal  = float(st.session_state.get("mensal_build", 0.0) or 0.0)
+
     else:
         return
-
-    # 3) Se ainda não há valores válidos, não mostrar
+    
     if entrada <= 0 or mensal <= 0:
         return
 
@@ -750,21 +753,25 @@ def ui_comprar():
         st.metric("Prestação (crédito)", euro0(prestacao))
         st.metric("Mensal total (com custos)", euro0(mensal_compra))
 
-    # Guardar resultados (para sticky/comparar)
+ # Guardar resultados (para sticky/comparar)
+
     st.session_state["upfront_buy"] = float(upfront_buy)
     st.session_state["mensal_compra"] = float(mensal_compra)
-    st.session_state["financiado"] = float(financiado)
-
+    st.session_state["financiado"] = float(financiado) 
     st.session_state["imt_2025"] = float(imt)
-    st.session_state["has_results"] = True
+
+
+# para o construir usar a mesma base (TAEG/prazo)
+    st.session_state["taeg_anual"] = float(taeg_anual)
+    st.session_state["prazo_anos"] = int(prazo_anos)
+
+# estado UI
+    st.session_state["buy_done"] = True
     st.session_state["active_mode"] = "comprar"
 
-    st.success("Cenário de compra calculado ✅")
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Secção CONSTRUIR (v2)
+# Secção CONSTRUIR (v2) — corrigido
 # ================================
 def ui_construir():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -773,88 +780,117 @@ def ui_construir():
 
     # ----------------------------
     # Tabela de sistemas (MVP 2026)
-    # Defaults são EDITÁVEIS pelo utilizador
+
     # ----------------------------
+
     SYSTEMS = {
         "Convencional": {
             "label": "Convencional",
-            "custo_m2_default": 1100,   # estimativo (editável)
+            "custo_m2_default": 1100,
             "fator": 1.00,
             "prazo_meses_default": 14,
             "pros": [
                 "Mais comum e fácil de comparar orçamentos",
                 "Boa aceitação bancária/seguradoras",
-                "Flexível em projeto e alterações"
+                "Flexível em projeto e alterações",
             ],
             "cons": [
                 "Normalmente mais lento",
                 "Maior risco de derrapagens (mão de obra/atrasos)",
-                "Dependente de equipas e disponibilidade local"
+                "Dependente de equipas e disponibilidade local",
             ],
         },
         "LSF (aço leve)": {
             "label": "LSF (aço leve)",
-            "custo_m2_default": 1000,   # estimativo (editável)
+            "custo_m2_default": 1000,
             "fator": 0.95,
             "prazo_meses_default": 10,
             "pros": [
                 "Construção mais rápida e previsível",
                 "Obra mais “seca” (menos tempos de cura)",
-                "Boa eficiência térmica/acústica (depende do sistema)"
+                "Boa eficiência térmica/acústica (depende do sistema)",
             ],
             "cons": [
                 "Qualidade depende MUITO do fabricante/montagem",
-                "Menos fornecedores (comparação de preço pode ser difícil)",
-                "Detalhes de pontes térmicas/isolamentos são críticos"
+                "Menos fornecedores (comparação pode ser difícil)",
+                "Pontes térmicas/isolamentos são críticos",
             ],
         },
         "Modular / 3E": {
             "label": "Modular / 3E",
-            "custo_m2_default": 950,    # estimativo (editável)
+            "custo_m2_default": 950,
             "fator": 0.92,
             "prazo_meses_default": 8,
             "pros": [
                 "Prazo geralmente mais curto",
                 "Maior controlo industrial (qualidade mais consistente)",
-                "Menos imprevistos em obra (depende do modelo)"
+                "Menos imprevistos em obra (depende do modelo)",
             ],
             "cons": [
                 "Logística/transportes podem pesar (acessos ao terreno)",
                 "Limitações de personalização (em alguns fornecedores)",
-                "Prazos dependem da fila de produção"
+                "Prazos dependem da fila de produção",
             ],
         },
         "Madeira / CLT": {
             "label": "Madeira / CLT",
-            "custo_m2_default": 1200,   # estimativo (editável)
+            "custo_m2_default": 1200,
             "fator": 1.03,
             "prazo_meses_default": 9,
             "pros": [
                 "Muito rápida (sistemas industrializados)",
                 "Ótimo desempenho térmico e conforto",
-                "Pegada carbónica potencialmente menor"
+                "Pegada carbónica potencialmente menor",
             ],
             "cons": [
                 "Pode ser mais caro (material/acabamentos)",
                 "Exige bom projeto de humidades/ventilação",
-                "Nem todos os bancos/seguros tratam igual (varia)"
+                "Nem todos os bancos/seguros tratam igual (varia)",
             ],
         },
     }
 
+    # -------------------------------------------------
+    # 1) ESTA PARTE FICA FORA DO FORM → fica dinâmica
+    # -------------------------------------------------
+    colTopL, colTopR = st.columns(2)
+    with colTopL:
+        url_terreno = st.text_input(
+            COPY["build_link_label"],
+            help=TIPS["url_terreno"],
+            key=K("construir", "url_terreno"),
+        )
+
+    with colTopR:
+        estrutura = st.selectbox(
+            "Sistema construtivo",
+            list(SYSTEMS.keys()),
+            help=TIPS["estrutura"],
+            key=K("construir", "estrutura"),
+            index=0,
+        )
+
+    # Prós/Contras DINÂMICOS
+    st.markdown("##### ✅ Prós & ❗Contras (para decidir rápido)")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("**Vantagens**")
+        for p in SYSTEMS[estrutura]["pros"]:
+            st.write(f"• {p}")
+    with c2:
+        st.markdown("**Pontos de atenção**")
+        for c in SYSTEMS[estrutura]["cons"]:
+            st.write(f"• {c}")
+
+    st.divider()
+
     # ----------------------------
-    # FORM (só calcula ao clicar)
+    # 2) FORM (só calcula ao clicar)
     # ----------------------------
     with st.form("form_construir", clear_on_submit=False):
         colL, colR = st.columns(2)
 
         with colL:
-            url_terreno = st.text_input(
-                COPY["build_link_label"],
-                help=TIPS["url_terreno"],
-                key=K("construir", "url_terreno"),
-            )
-
             preco_terreno = st.number_input(
                 "Preço do terreno (€)",
                 step=1000,
@@ -865,14 +901,6 @@ def ui_construir():
             )
 
         with colR:
-            estrutura = st.selectbox(
-                "Sistema construtivo",
-                list(SYSTEMS.keys()),
-                help=TIPS["estrutura"],
-                key=K("construir", "estrutura"),
-                index=0,
-            )
-
             area_m2 = st.number_input(
                 "Área útil (m²)",
                 min_value=40,
@@ -880,9 +908,8 @@ def ui_construir():
                 step=5,
                 help=TIPS["area_m2"],
                 key=K("construir", "area_m2_input"),
-            )
-
-            # default do custo/m2 vem do sistema, mas é editável
+                )
+            
             custo_m2_default = int(SYSTEMS[estrutura]["custo_m2_default"])
             custo_m2 = st.number_input(
                 "Custo base construção (€/m²)",
@@ -892,20 +919,6 @@ def ui_construir():
                 help=TIPS["custo_m2"],
                 key=K("construir", "custo_m2_input"),
             )
-
-        # --- prós/contras do sistema ---
-        st.markdown("##### ✅ Prós & ❗Contras (para decidir rápido)")
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**Vantagens**")
-            for p in SYSTEMS[estrutura]["pros"]:
-                st.write(f"• {p}")
-        with c2:
-            st.markdown("**Pontos de atenção**")
-            for c in SYSTEMS[estrutura]["cons"]:
-                st.write(f"• {c}")
-
-        st.divider()
 
         col1, col2, col3 = st.columns(3)
 
@@ -981,7 +994,7 @@ def ui_construir():
                 key=K("construir", "prazo_obra"),
             )
 
-        submitted = st.form_submit_button("✅ Calcular construção")
+        submitted = st.form_submit_button("✅ Calcular construção", use_container_width=True)
 
     # ----------------------------
     # Só calcula quando clicas
@@ -989,20 +1002,18 @@ def ui_construir():
     if not submitted:
         st.markdown("</div>", unsafe_allow_html=True)
         return
-
-    # Marca modo e resultados (para sticky)
-    st.session_state["active_mode"] = "construir"
-    st.session_state["has_results"] = True
-
+    
     # --- Ajuste por sistema ---
     fator = float(SYSTEMS[estrutura]["fator"])
 
     custo_construcao_base = float(area_m2) * float(custo_m2) * fator
-
+    
+    
     # IVA (MVP): 6% se checkbox, senão 23%
     iva_pct = 0.06 if iva_reduzido else 0.23
 
     iva_construcao = custo_construcao_base * float(iva_pct)
+
 
     imprevistos = custo_construcao_base * (float(imprevistos_pct) / 100.0)
 
@@ -1015,7 +1026,7 @@ def ui_construir():
         + float(fiscalizacao)
     )
 
-    # Usa taxa/prazo da secção Comprar (se existir) para comparar “base igual”
+    # Base igual: usa taxa/prazo do comprar (se existir)
     taeg_anual = float(st.session_state.get("taeg_anual", 0.04))
     prazo_anos = int(st.session_state.get("prazo_anos", 30))
 
@@ -1025,21 +1036,25 @@ def ui_construir():
     mensal_build = float(prest_build) + float(cond_man_build)
 
     colX, colY = st.columns(2)
-
+    
     with colX:
         st.metric("Total do projeto (estimado)", euro0(total_construcao))
         st.caption(
             f"Base: {euro0(custo_construcao_base)} | IVA: {euro0(iva_construcao)} | Imprevistos: {euro0(imprevistos)}"
         )
-
+    
     with colY:
         st.metric("Entrada necessária", euro0(entrada_build))
         st.metric("Prestação estimada (crédito)", euro0(prest_build))
         st.caption(f"Mensal total (com seguros/manut.): {euro0(mensal_build)}")
 
-    # guardar resultados para comparação + sticky
+    # guardar resultados (NÃO apagar comprar)
     st.session_state["entrada_build"] = float(entrada_build)
     st.session_state["mensal_build"] = float(mensal_build)
+
+    # estado UI (último calculado)
+    st.session_state["build_done"] = True
+    st.session_state["active_mode"] = "construir"
 
     st.success("Cenário de construção calculado ✅")
     st.markdown("</div>", unsafe_allow_html=True)
