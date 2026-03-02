@@ -28,10 +28,6 @@ COPY = {
         "O RumoCasa ajuda-te a transformar uma decisão emocional numa decisão informada."
     ),
 
-    "layout_label": "Disposição",
-    "layout_opt_cols": "Colunas lado a lado",
-    "layout_opt_tabs": "Abas separadas",
-
     "kpi_bar_hint": (
         "💡 Estes valores são estimativos e servem como apoio à decisão — "
         "não substituem propostas formais de instituições financeiras."
@@ -85,31 +81,7 @@ COPY = {
     ),
 }
 
-# -------------------------------------------------
-# CONFIG DA PÁGINA
-# -------------------------------------------------
-st.set_page_config(
-    page_title=COPY["app_title"],
-    page_icon="🏡",
-    layout="centered",
-)
 
-# -------------------------------------------------
-# BOOT RESET — garante app limpa ao abrir
-# -------------------------------------------------
-if "boot_done" not in st.session_state:
-    st.session_state["has_results"] = False
-    st.session_state["active_mode"] = None # "comprar" ou "construir"
-    st.session_state["boot_done"] = True
-    st.session_state["has_results"] = False
-
-    st.session_state["upfront_buy"] = 0.0
-    st.session_state["mensal_compra"] = 0.0
-    st.session_state["financiado"] = 0.0
-
-    st.session_state["entrada_build"] = 0.0
-    st.session_state["mensal_build"] = 0.0
-    st.session_state["imt_2025"] = 0.0
 
 
 # ================================
@@ -157,7 +129,88 @@ TIPS = {
 }
 
 # -------------------------------------------------
-# ESTILO GLOBAL RUMOCASA
+# CONFIG DA PÁGINA
+# -------------------------------------------------
+st.set_page_config(
+    page_title=COPY["app_title"],
+    page_icon="🏡",
+    layout="centered",
+)
+
+# -------------------------------------------------
+# BOOT RESET — garante app limpa ao abrir
+# (Põe isto ANTES do CSS e antes de usar session_state)
+# -------------------------------------------------
+if "boot_done" not in st.session_state:
+    st.session_state["boot_done"] = True
+
+    # estado UI
+    st.session_state["has_results"] = False
+    st.session_state["active_mode"] = None  # "comprar" | "construir"
+
+    # resultados
+    st.session_state["upfront_buy"] = 0.0
+    st.session_state["mensal_compra"] = 0.0
+    st.session_state["financiado"] = 0.0
+
+    st.session_state["entrada_build"] = 0.0
+    st.session_state["mensal_build"] = 0.0
+
+    st.session_state["imt_2025"] = 0.0
+
+
+# -------------------------------------------------
+# Helpers / utilitários
+# -------------------------------------------------
+def K(ns: str, name: str) -> str:
+    return f"{ns}::{name}"
+
+def ss_get(key, default):
+    if key not in st.session_state:
+        st.session_state[key] = default
+    return st.session_state[key]
+
+def euro0(x):
+    try:
+        return (f"{float(x):,.0f} €").replace(",", " ").replace(".", ",")
+    except Exception:
+        return "—"
+
+def calc_prestacao(pv, taxa_anual, anos):
+    r = float(taxa_anual) / 12.0
+    n = int(anos * 12)
+    if n <= 0:
+        return 0.0
+    if r == 0:
+        return pv / n
+    return (pv * r) / (1 - (1 + r) ** (-n))
+
+def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
+    v = float(valor)
+    if v <= 0:
+        return 0.0
+
+    if not hab_pp:
+        return v * 0.065  # simplificação (não-HPP)
+
+    if v <= 97064:
+        return 0.0
+    if v <= 132774:
+        taxa, parcela = 0.02, 1941.28
+    elif v <= 181034:
+        taxa, parcela = 0.05, 5708.21
+    elif v <= 301688:
+        taxa, parcela = 0.07, 9087.19
+    elif v <= 603289:
+        taxa, parcela = 0.08, 11959.32
+    else:
+        return v * 0.06
+
+    return v * taxa - parcela
+
+
+# -------------------------------------------------
+# ESTILO GLOBAL RUMOCASA (FORÇAR CLARO)
 # -------------------------------------------------
 st.markdown(
     """
@@ -166,19 +219,20 @@ st.markdown(
     --rc-green:        #0f5132;
     --rc-green-dark:   #0b3b25;
     --rc-green-soft:   rgba(15, 81, 50, 0.12);
-    --rc-green-track:  rgba(15, 81, 50, 0.45);
+
 
     --rc-gray-900:     #111827;
     --rc-gray-800:     #1f2937;
     --rc-gray-700:     #374151;
     --rc-gray-500:     #6B7280;
     --rc-gray-200:     #e5e7eb;
-    --rc-gray-100:     #f3f4f6;
-
     --rc-bg:           #f5f5f7;
 }
 
-.stApp { background-color: var(--rc-bg); }
+html, body, .stApp {
+    background-color: var(--rc-bg) !important;
+    color: var(--rc-gray-900) !important;
+}
 
 .main .block-container {
     max-width: 1100px;
@@ -186,18 +240,20 @@ st.markdown(
     padding-bottom: 3rem;
 }
 
+/* animação suave */
 @keyframes rc-fade-in-up {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 .rc-fade-in { animation: rc-fade-in-up 0.55s ease-out both; }
 
+/* header */
 .rc-header {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.35rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.4rem;
     animation: rc-fade-in-up 0.45s ease-out both;
 }
 
@@ -236,11 +292,12 @@ st.markdown(
     background: linear-gradient(90deg, #10b981, #0f5132);
 }
 
+/* cards */
 .section-card {
     background: #FFFFFF;
     border-radius: 18px;
     padding: 1.75rem;
-    border: 1px solid #E5E7EB;
+    border: 1px solid var(--rc-gray-200);
     box-shadow: 0 18px 40px rgba(15,23,42,0.08);
     margin: 0.6rem 0 1.4rem 0;
     animation: rc-fade-in-up 0.55s ease-out both;
@@ -256,6 +313,7 @@ st.markdown(
     box-shadow: 0 30px 78px rgba(15,23,42,0.18);
 }
 
+/* títulos */
 .rc-main-section-title {
     font-size: 1.65rem;
     font-weight: 850;
@@ -290,49 +348,55 @@ st.markdown(
     margin-left: 0.75rem;
 }
 
+/* inputs */
 .stTextInput > div > div > input,
 .stNumberInput input,
 .stSelectbox > div > div > select,
 .stTextArea textarea {
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-    padding: 6px 10px;
-    font-size: 0.95rem;
+    border-radius: 10px !important;
+    border: 1px solid #d1d5db !important;
+    padding: 6px 10px !important;
+    font-size: 0.95rem !important;
+    background: #ffffff !important;
+    color: var(--rc-gray-900) !important;
 }
 
 .stTextInput > div > div > input:focus,
 .stNumberInput input:focus,
 .stSelectbox > div > div > select:focus,
 .stTextArea textarea:focus {
-    border-color: var(--rc-green);
-    box-shadow: 0 0 0 2px var(--rc-green-soft);
-    outline: none;
+    border-color: var(--rc-green) !important;
+    box-shadow: 0 0 0 2px var(--rc-green-soft) !important;
+    outline: none !important;
 }
 
+/* botões */
 .stButton>button, .stDownloadButton>button {
-    background-color: var(--rc-green);
-    color: #ffffff;
-    border-radius: 999px;
-    border: none;
-    padding: 0.45rem 1.2rem;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.15s ease-in-out;
+    background-color: var(--rc-green) !important;
+    color: #ffffff !important;
+    border-radius: 999px !important;
+    border: none !important;
+    padding: 0.45rem 1.2rem !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease-in-out !important;
 }
 .stButton>button:hover, .stDownloadButton>button:hover {
-    background-color: var(--rc-green-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(15, 81, 50, 0.35);
+    background-color: var(--rc-green-dark) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 8px 18px rgba(15, 81, 50, 0.35) !important;
 }
 
+/* métricas */
 [data-testid="metric-container"] {
-    background: #FFFFFF;
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid #E5E7EB;
+    background: #FFFFFF !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--rc-gray-200) !important;
 }
 
+/* sticky bar */
 .rc-sticky-summary { margin-bottom: 1rem; }
 .rc-sticky-inner {
     display: flex;
@@ -357,136 +421,52 @@ st.markdown(
     font-weight: 700;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --rc-bg:         #020617;
-        --rc-gray-900:   #e5e7eb;
-        --rc-gray-800:   #e5e7eb;
-        --rc-gray-700:   #9ca3af;
-        --rc-gray-500:   #9ca3af;
-        --rc-gray-200:   #1f2937;
-        --rc-gray-100:   #111827;
-        --rc-green-soft: rgba(34, 197, 94, 0.15);
-    }
-
-    .stApp { background-color: #020617; }
-    .section-card {
-        background: #0b1220;
-        border-color: #1f2937;
-        box-shadow: 0 22px 55px rgba(0,0,0,0.65);
-    }
-    .rc-main-card {
-        background: linear-gradient(180deg, rgba(11,18,32,1) 0%, rgba(11,18,32,0.96) 100%);
-        border-top-color: rgba(45, 212, 191, 0.9);
-    }
-    .rc-tagline {
-        background: #0b1220;
-        color: #e5e7eb;
-        box-shadow: 0 6px 22px rgba(0,0,0,0.65);
-    }
-    .rc-logo-text {
-        background: linear-gradient(90deg, #6ee7b7, #22c55e);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-    .subtitle { color: #cbd5e1; }
-    [data-testid="metric-container"] {
-        background: #0b1220;
-        border-color: #1f2937;
-    }
-    .rc-sticky-inner { background: rgba(22, 163, 74, 0.96); }
+/* ===========================
+   HERO SECTION (CSS)
+=========================== */
+.rc-hero{
+  background: linear-gradient(
+    180deg,
+    rgba(34,197,94,0.08),
+    rgba(255,255,255,0)
+  );
+  padding: 2.6rem 1rem 2.1rem 1rem;
+  border-radius: 18px;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(229,231,235,0.8);
 }
+
+.rc-hero-inner h1{
+  font-size: 2.35rem;
+  font-weight: 800;
+  margin: 0 0 0.35rem 0;
+  color: #065F46;
+}
+
+.rc-hero-sub{
+  font-size: 1.05rem;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
+}
+
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-
-# -------------------------------------------------
-# Helpers / utilitários
-# -------------------------------------------------
-def K(ns: str, name: str) -> str:
-    return f"{ns}::{name}"
-
-def ss_get(key, default):
-    if key not in st.session_state:
-        st.session_state[key] = default
-    return st.session_state[key]
-
-def euro0(x):
-    try:
-        return (f"{float(x):,.0f} €").replace(",", " ").replace(".", ",")
-    except Exception:
-        return "—"
-
-def calc_prestacao(pv, taxa_anual, anos):
-    r = float(taxa_anual) / 12.0
-    n = int(anos * 12)
-    if n <= 0:
-        return 0.0
-    if r == 0:
-        return pv / n
-    return (pv * r) / (1 - (1 + r) ** (-n))
-
-
-def guess_price_from_url(url: str):
-    return None
-
-def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
-    v = float(valor)
-    if v <= 0:
-        return 0.0
-
-    if not hab_pp:
-        return v * 0.065
-
-    if v <= 97064:
-        return 0.0
-    if v <= 132774:
-        taxa, parcela = 0.02, 1941.28
-    elif v <= 181034:
-        taxa, parcela = 0.05, 5708.21
-    elif v <= 301688:
-        taxa, parcela = 0.07, 9087.19
-    elif v <= 603289:
-        taxa, parcela = 0.08, 11959.32
-    else:
-        return v * 0.06
-
-    return v * taxa - parcela
-
-# -------------------------------------------------
-# HEADER + CARTÃO INICIAL
-# -------------------------------------------------
 st.markdown(
-    """
-    <div class="rc-header rc-fade-in">
-      <div class="rc-logo">
-        <span class="emoji">🏡</span>
-        <span class="rc-logo-text">RumoCasa</span>
+    f"""
+    <div class="rc-hero rc-fade-in">
+      <div class="rc-hero-inner">
+        <h1>🏡 RumoCasa</h1>
+        <p class="rc-hero-sub">{COPY["hero_body"]}</p>
       </div>
-
-      <div class="rc-tagline">
-        O planeador inteligente para a tua decisão de casa.
-      </div>
-
-      <div class="rc-header-line"></div>
-    </div>
-
-    <div class="section-card rc-main-card rc-fade-in">
-      <h2 class="rc-main-section-title">📊 O que queres simular?</h2>
-      <p class="subtitle">
-        Decide com números, não com “achismos”.
-        Compara <b>Comprar</b> e <b>Construir</b>, percebe a <b>entrada</b>, a <b>mensalidade</b> e o impacto dos <b>juros</b>.
-        E se estás a arrendar, usa isso como fase estratégica enquanto juntas (e fazes o dinheiro trabalhar).
-      </p>
     </div>
     """,
     unsafe_allow_html=True,
 )
-
-sticky_placeholder = st.empty()
 
 # -------------------------------------------------
 # Estado UI (uma vez)
@@ -513,7 +493,6 @@ with colR1:
         keys_to_zero = [
             "upfront_buy", "mensal_compra", "financiado", "imt_2025",
             "entrada_build", "mensal_build",
-            
         ]
         for k in keys_to_zero:
             st.session_state[k] = 0.0
@@ -537,11 +516,16 @@ with colR1:
             K("comprar", "outros_extra_input"),
 
             # construir
+            K("construir", "preco_terreno_input"),
+            K("construir", "estrutura"),
             K("construir", "area_m2_input"),
             K("construir", "custo_m2_input"),
             K("construir", "proj_input"),
             K("construir", "fisc_input"),
             K("construir", "cond_build_input"),
+            K("construir", "prazo_obra"),
+            K("construir", "iva_reduzido"),
+            K("construir", "imp_prev"),
         ]
         for k in keys_to_pop:
             st.session_state.pop(k, None)
@@ -566,7 +550,7 @@ def ui_sticky_summary(container):
 
     else:
         return
-    
+
     if entrada <= 0 or mensal <= 0:
         return
 
@@ -586,6 +570,12 @@ def ui_sticky_summary(container):
     """
     container.markdown(html, unsafe_allow_html=True)
 
+
+# placeholder + render (tem de vir DEPOIS da função)
+sticky_placeholder = st.empty()
+ui_sticky_summary(sticky_placeholder)
+
+
 # -------------------------------------------------
 # Toggle UI
 # -------------------------------------------------
@@ -595,7 +585,7 @@ modo_ui = st.radio(
     [COPY["layout_opt_cols"], COPY["layout_opt_tabs"]],
     horizontal=True,
 )
-st.markdown("</div>", unsafe_allow_html=True)  # ✅ fechar o card do toggle
+st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ================================
