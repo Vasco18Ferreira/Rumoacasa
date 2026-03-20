@@ -522,26 +522,14 @@ html, body, .stApp {
 
 .rc-hero{
   background:
-    radial-gradient(circle at top left, rgba(34,197,94,0.18), transparent 34%),
-    linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.98));
-  padding: 3.4rem 1.4rem 2.8rem 1.4rem;
+    radial-gradient(circle at top left, rgba(34,197,94,0.12), transparent 35%),
+    linear-gradient(180deg, rgba(255,255,255,1), rgba(249,250,251,0.96));
+  padding: 3.2rem 1.4rem 2.6rem 1.4rem;
   border-radius: 24px;
   text-align: center;
   margin-bottom: 2rem;
   border: 1px solid rgba(229,231,235,0.9);
   box-shadow: 0 18px 50px rgba(15,23,42,0.08);
-  position: relative;
-  overflow: hidden;
-}
-
-.rc-hero::before{
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #22c55e, #0f5132);
 }
 
 .rc-hero-inner{
@@ -554,37 +542,20 @@ html, body, .stApp {
   background: #ffffff;
   color: #0f5132;
   border: 1px solid rgba(16,185,129,0.25);
-  padding: 0.45rem 0.95rem;
+  padding: 0.45rem 0.85rem;
   border-radius: 999px;
   font-size: 0.85rem;
-  font-weight: 800;
-  margin-bottom: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
   box-shadow: 0 6px 18px rgba(0,0,0,0.05);
 }
 
-.rc-hero-brand{
-  font-size: 0.98rem;
-  font-weight: 700;
-  color: #0f5132;
-  margin-bottom: 0.7rem;
-  letter-spacing: 0.01em;
-}
-
 .rc-hero-inner h1{
-  font-size: 2.45rem;
-  line-height: 1.12;
+  font-size: 2.7rem;
+  line-height: 1.15;
   font-weight: 850;
-  margin: 0 0 0.35rem 0;
+  margin: 0 0 0.75rem 0;
   color: #111827;
-  letter-spacing: -0.02em;
-}
-
-.rc-hero-highlight{
-  font-size: 2.2rem;
-  line-height: 1.1;
-  font-weight: 850;
-  margin-bottom: 1rem;
-  color: #0f5132;
   letter-spacing: -0.02em;
 }
 
@@ -749,23 +720,14 @@ html, body, .stApp {
 
 hero_html = f"""<div class="rc-hero rc-fade-in">
 <div class="rc-hero-inner">
-
-<div class="rc-hero-badge">RumoCasa</div>
-
-<div class="rc-hero-brand">O teu planeador habitacional</div>
-
-<h1>Comprar ou construir casa?</h1>
-
-<div class="rc-hero-highlight">Decide com números reais.</div>
-
+<div class="rc-hero-badge">Planeador habitacional inteligente</div>
+<h1>{COPY["hero_title"]}</h1>
 <p class="rc-hero-sub">{COPY["hero_subtitle"]}</p>
-
 <div class="rc-hero-points">
 <span>📊 Comparação simples</span>
 <span>💰 Estimativas claras</span>
 <span>🧠 Decisão mais segura</span>
 </div>
-
 </div>
 </div>"""
 
