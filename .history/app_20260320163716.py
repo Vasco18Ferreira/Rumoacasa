@@ -606,9 +606,9 @@ html, body, .stApp {
 }
 
 .rc-hero-sub{
-  font-size: 1.1rem;
-  color: #374151;
-  line-height: 1.75;
+  font-size: 1.08rem;
+  color: #4b5563;
+  line-height: 1.7;
   margin: 0 auto;
   max-width: 700px;
 }
@@ -767,7 +767,7 @@ html, body, .stApp {
 hero_html = f"""<div class="rc-hero rc-fade-in">
 <div class="rc-hero-inner">
 
-<div class="rc-hero-badge">🏡 RumoCasa</div>
+<div class="rc-hero-badge">RumoCasa</div>
 
 <div class="rc-hero-brand">O teu planeador habitacional</div>
 

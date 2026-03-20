@@ -595,20 +595,18 @@ html, body, .stApp {
 }
 
 .rc-hero-highlight{
-  font-size: 2.3rem;
+  font-size: 2.2rem;
   line-height: 1.1;
-  font-weight: 900;
+  font-weight: 850;
   margin-bottom: 1rem;
-  background: linear-gradient(90deg, #16a34a, #065f46);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #0f5132;
+  letter-spacing: -0.02em;
 }
 
 .rc-hero-sub{
-  font-size: 1.1rem;
-  color: #374151;
-  line-height: 1.75;
+  font-size: 1.08rem;
+  color: #4b5563;
+  line-height: 1.7;
   margin: 0 auto;
   max-width: 700px;
 }
@@ -767,7 +765,7 @@ html, body, .stApp {
 hero_html = f"""<div class="rc-hero rc-fade-in">
 <div class="rc-hero-inner">
 
-<div class="rc-hero-badge">🏡 RumoCasa</div>
+<div class="rc-hero-badge">RumoCasa</div>
 
 <div class="rc-hero-brand">O teu planeador habitacional</div>
 

@@ -767,7 +767,7 @@ html, body, .stApp {
 hero_html = f"""<div class="rc-hero rc-fade-in">
 <div class="rc-hero-inner">
 
-<div class="rc-hero-badge">🏡 RumoCasa</div>
+<div class="rc-hero-badge">RumoCasa</div>
 
 <div class="rc-hero-brand">O teu planeador habitacional</div>
 

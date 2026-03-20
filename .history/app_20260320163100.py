@@ -522,31 +522,16 @@ html, body, .stApp {
 
 .rc-hero{
   background:
-    radial-gradient(circle at 20% 0%, rgba(34,197,94,0.35), transparent 40%),
-    linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
-  padding: 3.6rem 1.5rem 3rem 1.5rem;
-  border-radius: 26px;
+    radial-gradient(circle at top left, rgba(34,197,94,0.18), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.98));
+  padding: 3.4rem 1.4rem 2.8rem 1.4rem;
+  border-radius: 24px;
   text-align: center;
-  margin-bottom: 2.2rem;
-  border: 1px solid rgba(229,231,235,1);
-  box-shadow:
-    0 25px 60px rgba(15,23,42,0.12),
-    0 10px 25px rgba(34,197,94,0.08);
+  margin-bottom: 2rem;
+  border: 1px solid rgba(229,231,235,0.9);
+  box-shadow: 0 18px 50px rgba(15,23,42,0.08);
   position: relative;
   overflow: hidden;
-}
-
-.rc-hero::after{
-  content: "";
-  position: absolute;
-  bottom: -60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 500px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(34,197,94,0.25), transparent 70%);
-  filter: blur(40px);
-  z-index: 0;
 }
 
 .rc-hero::before{
@@ -595,20 +580,18 @@ html, body, .stApp {
 }
 
 .rc-hero-highlight{
-  font-size: 2.3rem;
+  font-size: 2.2rem;
   line-height: 1.1;
-  font-weight: 900;
+  font-weight: 850;
   margin-bottom: 1rem;
-  background: linear-gradient(90deg, #16a34a, #065f46);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #0f5132;
+  letter-spacing: -0.02em;
 }
 
 .rc-hero-sub{
-  font-size: 1.1rem;
-  color: #374151;
-  line-height: 1.75;
+  font-size: 1.08rem;
+  color: #4b5563;
+  line-height: 1.7;
   margin: 0 auto;
   max-width: 700px;
 }
@@ -767,7 +750,7 @@ html, body, .stApp {
 hero_html = f"""<div class="rc-hero rc-fade-in">
 <div class="rc-hero-inner">
 
-<div class="rc-hero-badge">🏡 RumoCasa</div>
+<div class="rc-hero-badge">RumoCasa</div>
 
 <div class="rc-hero-brand">O teu planeador habitacional</div>
 
