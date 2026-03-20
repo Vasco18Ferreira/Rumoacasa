@@ -10,28 +10,27 @@ import altair as alt
 # COPY PREMIUM (PT) — RumoCasa
 # ================================
 COPY = {
-    "app_title": "RumoCasa 🏡",
-
-    "app_tagline": "Compara cenários e decide a tua casa com mais clareza.",
-
-    "layout_label": "Como preferes ver a simulação?",
-    "layout_opt_cols": "Comparação lado a lado",
-    "layout_opt_tabs": "Ver por separadores",
-
-    "hero_title": "Comprar ou construir casa? Decide com números reais.",
-
-    "hero_subtitle": (
-        "Compara cenários, estima a entrada necessária, a prestação mensal e o impacto real da tua decisão "
-        "antes de avançar."
+    "app_title": "RumoCasa 🏡 Planeador Habitacional",
+    "app_tagline": "O planeador inteligente para a tua decisão de habitação.",
+    "layout_label": "Disposição",
+    "layout_opt_cols": "Colunas lado a lado",
+    "layout_opt_tabs": "Abas separadas",
+    "hero_body": (
+        "Decide com números — não com achismos. "
+        "Compara Comprar, Construir ou Arrendar estrategicamente, percebe a entrada necessária, "
+        "a prestação mensal e o impacto real dos juros antes de tomar decisões."
     ),
 
     "section_simular_title": "📊 O que queres simular?",
-
     "section_simular_body": (
-        "Escolhe o cenário que estás a considerar e percebe, de forma clara, "
-        "quanto precisas de entrada, quanto poderás pagar por mês e qual o impacto total da decisão. "
-        "O RumoCasa ajuda-te a comparar com mais clareza e menos dúvida."
+        "Escolhe o cenário que estás a considerar e vê, de forma clara: "
+        "quanto precisas à cabeça, quanto vais pagar todos os meses e o custo real ao longo do tempo. "
+        "O RumoCasa ajuda-te a transformar uma decisão emocional numa decisão informada."
     ),
+
+    "layout_label": "Disposição",
+    "layout_opt_cols": "Colunas lado a lado",
+    "layout_opt_tabs": "Abas separadas",
 
     "kpi_bar_hint": (
         "💡 Estes valores são estimativos e servem como apoio à decisão — "
@@ -86,7 +85,31 @@ COPY = {
     ),
 }
 
+# -------------------------------------------------
+# CONFIG DA PÁGINA
+# -------------------------------------------------
+st.set_page_config(
+    page_title=COPY["app_title"],
+    page_icon="🏡",
+    layout="centered",
+)
 
+# -------------------------------------------------
+# BOOT RESET — garante app limpa ao abrir
+# -------------------------------------------------
+if "boot_done" not in st.session_state:
+    st.session_state["has_results"] = False
+    st.session_state["active_mode"] = None # "comprar" ou "construir"
+    st.session_state["boot_done"] = True
+    st.session_state["has_results"] = False
+
+    st.session_state["upfront_buy"] = 0.0
+    st.session_state["mensal_compra"] = 0.0
+    st.session_state["financiado"] = 0.0
+
+    st.session_state["entrada_build"] = 0.0
+    st.session_state["mensal_build"] = 0.0
+    st.session_state["imt_2025"] = 0.0
 
 
 # ================================
@@ -134,177 +157,7 @@ TIPS = {
 }
 
 # -------------------------------------------------
-# CONFIG DA PÁGINA
-# -------------------------------------------------
-st.set_page_config(
-    page_title=COPY["app_title"],
-    page_icon="🏡",
-    layout="centered",
-)
-
-# -------------------------------------------------
-# BOOT RESET — garante app limpa ao abrir
-# -------------------------------------------------
-if "boot_done" not in st.session_state:
-    st.session_state["boot_done"] = True
-
-    # estado UI
-    st.session_state["has_results"] = False
-    st.session_state["active_mode"] = None  # "comprar" | "construir"
-
-    # resultados
-    st.session_state["upfront_buy"] = 0.0
-    st.session_state["mensal_compra"] = 0.0
-    st.session_state["financiado"] = 0.0
-
-    st.session_state["entrada_build"] = 0.0
-    st.session_state["mensal_build"] = 0.0
-
-    st.session_state["imt_2025"] = 0.0
-
-
-# -------------------------------------------------
-# Helpers / utilitários
-# -------------------------------------------------
-def K(ns: str, name: str) -> str:
-    return f"{ns}::{name}"
-
-def ss_get(key, default):
-    if key not in st.session_state:
-        st.session_state[key] = default
-    return st.session_state[key]
-
-def euro0(x):
-    try:
-        return (f"{float(x):,.0f} €").replace(",", " ").replace(".", ",")
-    except Exception:
-        return "—"
-
-def calc_prestacao(pv, taxa_anual, anos):
-    r = float(taxa_anual) / 12.0
-    n = int(anos * 12)
-    if n <= 0:
-        return 0.0
-    if r == 0:
-        return pv / n
-    return (pv * r) / (1 - (1 + r) ** (-n))
-
-def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
-    v = float(valor)
-    if v <= 0:
-        return 0.0
-
-    if not hab_pp:
-        return v * 0.065  # simplificação (não-HPP)
-
-    if v <= 97064:
-        return 0.0
-    if v <= 132774:
-        taxa, parcela = 0.02, 1941.28
-    elif v <= 181034:
-        taxa, parcela = 0.05, 5708.21
-    elif v <= 301688:
-        taxa, parcela = 0.07, 9087.19
-    elif v <= 603289:
-        taxa, parcela = 0.08, 11959.32
-    else:
-        return v * 0.06
-
-    return v * taxa - parcela
-
-def ui_wow_result(compra_entrada, compra_mensal, construir_entrada, construir_mensal):
-    try:
-        compra_entrada = float(compra_entrada or 0)
-        compra_mensal = float(compra_mensal or 0)
-        construir_entrada = float(construir_entrada or 0)
-        construir_mensal = float(construir_mensal or 0)
-    except Exception:
-        return
-
-    if compra_mensal <= 0 or construir_mensal <= 0:
-        return
-
-    if construir_mensal < compra_mensal:
-        best_name = "Construir"
-        best_monthly = construir_mensal
-        best_entry = construir_entrada
-        alt_name = "Comprar"
-        alt_monthly = compra_mensal
-        alt_entry = compra_entrada
-        diff = compra_mensal - construir_mensal
-        note = f"Neste cenário, construir reduz a prestação mensal em cerca de {euro0(diff)}."
-    elif compra_mensal < construir_mensal:
-        best_name = "Comprar"
-        best_monthly = compra_mensal
-        best_entry = compra_entrada
-        alt_name = "Construir"
-        alt_monthly = construir_mensal
-        alt_entry = construir_entrada
-        diff = construir_mensal - compra_mensal
-        note = f"Neste cenário, comprar reduz a prestação mensal em cerca de {euro0(diff)}."
-    else:
-        best_name = "Empate técnico"
-        best_monthly = compra_mensal
-        best_entry = compra_entrada
-        alt_name = "Construir"
-        alt_monthly = construir_mensal
-        alt_entry = construir_entrada
-        diff = 0
-        note = "Neste cenário, a prestação mensal estimada é muito semelhante nas duas opções."
-
-    html = f"""
-    <div class="rc-wow-wrap">
-      <div class="rc-wow-title">✨ Comparação rápida do cenário</div>
-
-      <div class="rc-wow-grid">
-        <div class="rc-wow-card best">
-          <div class="rc-wow-badge best">Melhor opção neste cenário</div>
-          <h4>{best_name}</h4>
-          <div class="rc-wow-main">{euro0(best_monthly)}</div>
-          <div class="rc-wow-main-label">prestação mensal estimada</div>
-
-          <div class="rc-wow-list">
-            <div class="rc-wow-item">
-              <span>Entrada estimada</span>
-              <strong>{euro0(best_entry)}</strong>
-            </div>
-            <div class="rc-wow-item">
-              <span>Mensalidade</span>
-              <strong>{euro0(best_monthly)}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="rc-wow-card">
-          <div class="rc-wow-badge alt">Alternativa</div>
-          <h4>{alt_name}</h4>
-          <div class="rc-wow-main">{euro0(alt_monthly)}</div>
-          <div class="rc-wow-main-label">prestação mensal estimada</div>
-
-          <div class="rc-wow-list">
-            <div class="rc-wow-item">
-              <span>Entrada estimada</span>
-              <strong>{euro0(alt_entry)}</strong>
-            </div>
-            <div class="rc-wow-item">
-              <span>Mensalidade</span>
-              <strong>{euro0(alt_monthly)}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="rc-wow-diff">
-        <div class="rc-wow-diff-top">Diferença mensal estimada</div>
-        <div class="rc-wow-diff-value">{euro0(diff)}</div>
-        <div class="rc-wow-note">{note}</div>
-      </div>
-    </div>
-    """
-    st.markdown(html, unsafe_allow_html=True)
-
-# -------------------------------------------------
-# ESTILO GLOBAL RUMOCASA (FORÇAR CLARO)
+# ESTILO GLOBAL RUMOCASA
 # -------------------------------------------------
 st.markdown(
     """
@@ -313,20 +166,19 @@ st.markdown(
     --rc-green:        #0f5132;
     --rc-green-dark:   #0b3b25;
     --rc-green-soft:   rgba(15, 81, 50, 0.12);
-
+    --rc-green-track:  rgba(15, 81, 50, 0.45);
 
     --rc-gray-900:     #111827;
     --rc-gray-800:     #1f2937;
     --rc-gray-700:     #374151;
     --rc-gray-500:     #6B7280;
     --rc-gray-200:     #e5e7eb;
+    --rc-gray-100:     #f3f4f6;
+
     --rc-bg:           #f5f5f7;
 }
 
-html, body, .stApp {
-    background-color: var(--rc-bg) !important;
-    color: var(--rc-gray-900) !important;
-}
+.stApp { background-color: var(--rc-bg); }
 
 .main .block-container {
     max-width: 1100px;
@@ -334,20 +186,18 @@ html, body, .stApp {
     padding-bottom: 3rem;
 }
 
-/* animação suave */
 @keyframes rc-fade-in-up {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 .rc-fade-in { animation: rc-fade-in-up 0.55s ease-out both; }
 
-/* header */
 .rc-header {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.35rem;
-    margin-bottom: 1.4rem;
+    margin-bottom: 2rem;
     animation: rc-fade-in-up 0.45s ease-out both;
 }
 
@@ -386,12 +236,11 @@ html, body, .stApp {
     background: linear-gradient(90deg, #10b981, #0f5132);
 }
 
-/* cards */
 .section-card {
     background: #FFFFFF;
     border-radius: 18px;
     padding: 1.75rem;
-    border: 1px solid var(--rc-gray-200);
+    border: 1px solid #E5E7EB;
     box-shadow: 0 18px 40px rgba(15,23,42,0.08);
     margin: 0.6rem 0 1.4rem 0;
     animation: rc-fade-in-up 0.55s ease-out both;
@@ -407,7 +256,6 @@ html, body, .stApp {
     box-shadow: 0 30px 78px rgba(15,23,42,0.18);
 }
 
-/* títulos */
 .rc-main-section-title {
     font-size: 1.65rem;
     font-weight: 850;
@@ -442,55 +290,49 @@ html, body, .stApp {
     margin-left: 0.75rem;
 }
 
-/* inputs */
 .stTextInput > div > div > input,
 .stNumberInput input,
 .stSelectbox > div > div > select,
 .stTextArea textarea {
-    border-radius: 10px !important;
-    border: 1px solid #d1d5db !important;
-    padding: 6px 10px !important;
-    font-size: 0.95rem !important;
-    background: #ffffff !important;
-    color: var(--rc-gray-900) !important;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+    font-size: 0.95rem;
 }
 
 .stTextInput > div > div > input:focus,
 .stNumberInput input:focus,
 .stSelectbox > div > div > select:focus,
 .stTextArea textarea:focus {
-    border-color: var(--rc-green) !important;
-    box-shadow: 0 0 0 2px var(--rc-green-soft) !important;
-    outline: none !important;
+    border-color: var(--rc-green);
+    box-shadow: 0 0 0 2px var(--rc-green-soft);
+    outline: none;
 }
 
-/* botões */
 .stButton>button, .stDownloadButton>button {
-    background-color: var(--rc-green) !important;
-    color: #ffffff !important;
-    border-radius: 999px !important;
-    border: none !important;
-    padding: 0.45rem 1.2rem !important;
-    font-weight: 600 !important;
-    font-size: 0.95rem !important;
-    cursor: pointer !important;
-    transition: all 0.15s ease-in-out !important;
+    background-color: var(--rc-green);
+    color: #ffffff;
+    border-radius: 999px;
+    border: none;
+    padding: 0.45rem 1.2rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
 }
 .stButton>button:hover, .stDownloadButton>button:hover {
-    background-color: var(--rc-green-dark) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 8px 18px rgba(15, 81, 50, 0.35) !important;
+    background-color: var(--rc-green-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(15, 81, 50, 0.35);
 }
 
-/* métricas */
 [data-testid="metric-container"] {
-    background: #FFFFFF !important;
-    padding: 12px !important;
-    border-radius: 12px !important;
-    border: 1px solid var(--rc-gray-200) !important;
+    background: #FFFFFF;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #E5E7EB;
 }
 
-/* sticky bar */
 .rc-sticky-summary { margin-bottom: 1rem; }
 .rc-sticky-inner {
     display: flex;
@@ -515,274 +357,162 @@ html, body, .stApp {
     font-weight: 700;
 }
 
-/* ===========================
-   HERO SECTION (PREMIUM)
-=========================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --rc-bg:         #020617;
+        --rc-gray-900:   #e5e7eb;
+        --rc-gray-800:   #e5e7eb;
+        --rc-gray-700:   #9ca3af;
+        --rc-gray-500:   #9ca3af;
+        --rc-gray-200:   #1f2937;
+        --rc-gray-100:   #111827;
+        --rc-green-soft: rgba(34, 197, 94, 0.15);
+    }
 
-.rc-hero{
-  background:
-    radial-gradient(circle at top left, rgba(34,197,94,0.12), transparent 35%),
-    linear-gradient(180deg, rgba(255,255,255,1), rgba(249,250,251,0.96));
-  padding: 3.2rem 1.4rem 2.6rem 1.4rem;
-  border-radius: 24px;
-  text-align: center;
-  margin-bottom: 2rem;
-  border: 1px solid rgba(229,231,235,0.9);
-  box-shadow: 0 18px 50px rgba(15,23,42,0.08);
+    .stApp { background-color: #020617; }
+    .section-card {
+        background: #0b1220;
+        border-color: #1f2937;
+        box-shadow: 0 22px 55px rgba(0,0,0,0.65);
+    }
+    .rc-main-card {
+        background: linear-gradient(180deg, rgba(11,18,32,1) 0%, rgba(11,18,32,0.96) 100%);
+        border-top-color: rgba(45, 212, 191, 0.9);
+    }
+    .rc-tagline {
+        background: #0b1220;
+        color: #e5e7eb;
+        box-shadow: 0 6px 22px rgba(0,0,0,0.65);
+    }
+    .rc-logo-text {
+        background: linear-gradient(90deg, #6ee7b7, #22c55e);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    .subtitle { color: #cbd5e1; }
+    [data-testid="metric-container"] {
+        background: #0b1220;
+        border-color: #1f2937;
+    }
+    .rc-sticky-inner { background: rgba(22, 163, 74, 0.96); }
 }
-
-.rc-hero-inner{
-  max-width: 760px;
-  margin: 0 auto;
-}
-
-.rc-hero-badge{
-  display: inline-block;
-  background: #ffffff;
-  color: #0f5132;
-  border: 1px solid rgba(16,185,129,0.25);
-  padding: 0.45rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-}
-
-.rc-hero-inner h1{
-  font-size: 2.7rem;
-  line-height: 1.15;
-  font-weight: 850;
-  margin: 0 0 0.75rem 0;
-  color: #111827;
-  letter-spacing: -0.02em;
-}
-
-.rc-hero-sub{
-  font-size: 1.08rem;
-  color: #4b5563;
-  line-height: 1.7;
-  margin: 0 auto;
-  max-width: 700px;
-}
-
-.rc-hero-points{
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-}
-
-.rc-hero-points span{
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  padding: 0.55rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #374151;
-}
-
-/* ===========================
-   RESULTADO WOW
-=========================== */
-
-.rc-wow-wrap{
-  margin: 1.1rem 0 1.6rem 0;
-  animation: rc-fade-in-up 0.5s ease-out both;
-}
-
-.rc-wow-title{
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--rc-gray-900);
-  margin-bottom: 0.9rem;
-}
-
-.rc-wow-grid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.rc-wow-card{
-  background: #ffffff;
-  border: 1px solid var(--rc-gray-200);
-  border-radius: 20px;
-  padding: 1.2rem 1.2rem 1rem 1.2rem;
-  box-shadow: 0 16px 35px rgba(15,23,42,0.06);
-}
-
-.rc-wow-card.best{
-  border: 2px solid rgba(34,197,94,0.55);
-  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
-  box-shadow: 0 20px 40px rgba(34,197,94,0.12);
-}
-
-.rc-wow-badge{
-  display: inline-block;
-  padding: 0.3rem 0.65rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  margin-bottom: 0.7rem;
-}
-
-.rc-wow-badge.best{
-  background: rgba(34,197,94,0.14);
-  color: #166534;
-}
-
-.rc-wow-badge.alt{
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.rc-wow-card h4{
-  margin: 0 0 0.6rem 0;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #111827;
-}
-
-.rc-wow-main{
-  font-size: 1.9rem;
-  font-weight: 850;
-  color: #111827;
-  line-height: 1.1;
-  margin-bottom: 0.2rem;
-}
-
-.rc-wow-main-label{
-  font-size: 0.88rem;
-  color: #6b7280;
-  margin-bottom: 0.9rem;
-}
-
-.rc-wow-list{
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.rc-wow-item{
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.95rem;
-  color: #374151;
-}
-
-.rc-wow-item strong{
-  color: #111827;
-}
-
-.rc-wow-diff{
-  margin-top: 1rem;
-  background: linear-gradient(90deg, rgba(15,81,50,0.08), rgba(255,255,255,1));
-  border: 1px solid rgba(15,81,50,0.12);
-  border-radius: 18px;
-  padding: 0.95rem 1rem;
-}
-
-.rc-wow-diff-top{
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  margin-bottom: 0.25rem;
-}
-
-.rc-wow-diff-value{
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: #0f5132;
-}
-
-.rc-wow-note{
-  margin-top: 0.45rem;
-  font-size: 0.93rem;
-  color: #374151;
-}
-
-@media (max-width: 900px){
-  .rc-wow-grid{
-    grid-template-columns: 1fr;
-  }
-}
-
 </style>
 """,
     unsafe_allow_html=True,
 )
 
+
+# -------------------------------------------------
+# Helpers / utilitários
+# -------------------------------------------------
+def K(ns: str, name: str) -> str:
+    return f"{ns}::{name}"
+
+def ss_get(key, default):
+    if key not in st.session_state:
+        st.session_state[key] = default
+    return st.session_state[key]
+
+def euro0(x):
+    try:
+        return (f"{float(x):,.0f} €").replace(",", " ").replace(".", ",")
+    except Exception:
+        return "—"
+
+def calc_prestacao(pv, taxa_anual, anos):
+    r = float(taxa_anual) / 12.0
+    n = int(anos * 12)
+    if n <= 0:
+        return 0.0
+    if r == 0:
+        return pv / n
+    return (pv * r) / (1 - (1 + r) ** (-n))
+
+
+def guess_price_from_url(url: str):
+    return None
+
+def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
+    v = float(valor)
+    if v <= 0:
+        return 0.0
+
+    if not hab_pp:
+        return v * 0.065
+
+    if v <= 97064:
+        return 0.0
+    if v <= 132774:
+        taxa, parcela = 0.02, 1941.28
+    elif v <= 181034:
+        taxa, parcela = 0.05, 5708.21
+    elif v <= 301688:
+        taxa, parcela = 0.07, 9087.19
+    elif v <= 603289:
+        taxa, parcela = 0.08, 11959.32
+    else:
+        return v * 0.06
+
+    return v * taxa - parcela
+
+# -------------------------------------------------
+# HEADER + CARTÃO INICIAL
+# -------------------------------------------------
 st.markdown(
-    f"""
-    <div class="rc-hero rc-fade-in">
-      <div class="rc-hero-inner">
-
-        <div class="rc-hero-badge">
-          Planeador habitacional inteligente
-        </div>
-
-        <h1>{COPY["hero_title"]}</h1>
-
-        <p class="rc-hero-sub">
-          {COPY["hero_subtitle"]}
-        </p>
-
-        <div class="rc-hero-points">
-          <span>📊 Comparação simples</span>
-          <span>💰 Estimativas claras</span>
-          <span>🧠 Decisão mais segura</span>
-        </div>
-
+    """
+    <div class="rc-header rc-fade-in">
+      <div class="rc-logo">
+        <span class="emoji">🏡</span>
+        <span class="rc-logo-text">RumoCasa</span>
       </div>
+
+      <div class="rc-tagline">
+        O planeador inteligente para a tua decisão de casa.
+      </div>
+
+      <div class="rc-header-line"></div>
+    </div>
+
+    <div class="section-card rc-main-card rc-fade-in">
+      <h2 class="rc-main-section-title">📊 O que queres simular?</h2>
+      <p class="subtitle">
+        Decide com números, não com “achismos”.
+        Compara <b>Comprar</b> e <b>Construir</b>, percebe a <b>entrada</b>, a <b>mensalidade</b> e o impacto dos <b>juros</b>.
+        E se estás a arrendar, usa isso como fase estratégica enquanto juntas (e fazes o dinheiro trabalhar).
+      </p>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-# -------------------------------------------------
-# Estado UI (uma vez)
-# -------------------------------------------------
-if "active_mode" not in st.session_state:
-    st.session_state["active_mode"] = None
-
-if "buy_done" not in st.session_state:
-    st.session_state["buy_done"] = False
-
-if "build_done" not in st.session_state:
-    st.session_state["build_done"] = False
-
+sticky_placeholder = st.empty()
 
 # -------------------------------------------------
 # Reset manual (Nova simulação)
 # -------------------------------------------------
 colR1, colR2 = st.columns([1, 3])
-
 with colR1:
     if st.button("🔄 Nova simulação", use_container_width=True):
 
-        # 1) limpar resultados (pôr a 0)
+        # 1) limpar resultados
         keys_to_zero = [
-            "upfront_buy", "mensal_compra", "financiado", "imt_2025",
+            "upfront_buy", "mensal_compra", "financiado",
             "entrada_build", "mensal_build",
+            "imt_2025",
         ]
         for k in keys_to_zero:
             st.session_state[k] = 0.0
 
-        # 2) estado da UI
-        st.session_state["buy_done"] = False
-        st.session_state["build_done"] = False
-        st.session_state["active_mode"] = None
+        # 2) bloquear sticky
+        st.session_state["has_results"] = False
 
-        # 3) limpar inputs (para não ficarem valores antigos nos campos)
+        # 3) limpar inputs (muito importante!)
         keys_to_pop = [
             # comprar
             K("comprar", "preco_casa_input"),
             K("comprar", "entrada_pct_input"),
+            K("comprar", "poup_atual_input"),
             K("comprar", "taeg_input"),
             K("comprar", "prazo_input"),
             K("comprar", "condo_input"),
@@ -791,42 +521,39 @@ with colR1:
             K("comprar", "obras_mob_input"),
             K("comprar", "outros_extra_input"),
 
-            # construir
+            # construir (ajusta aos teus nomes reais)
             K("construir", "preco_terreno_input"),
-            K("construir", "estrutura"),
             K("construir", "area_m2_input"),
             K("construir", "custo_m2_input"),
-            K("construir", "proj_input"),
-            K("construir", "fisc_input"),
-            K("construir", "cond_build_input"),
-            K("construir", "prazo_obra"),
-            K("construir", "iva_reduzido"),
-            K("construir", "imp_prev"),
+            K("construir", "imprevistos_pct_input"),
+            K("construir", "entrada_pct_build_input"),
         ]
         for k in keys_to_pop:
             st.session_state.pop(k, None)
 
         st.rerun()
 
-
 # -------------------------------------------------
-# Sticky Summary — último calculado
+# Sticky Summary — resumo rápido (só aparece com valores)
 # -------------------------------------------------
 def ui_sticky_summary(container):
+    # 1) Só mostra depois de clicar "Calcular"
+    if not st.session_state.get("has_results", False):
+        return
 
+    # 2) Decide de onde vêm os valores (comprar vs construir)
     mode = st.session_state.get("active_mode")
 
-    if mode == "comprar" and st.session_state.get("buy_done", False):
+    if mode == "comprar":
         entrada = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
         mensal  = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
-
-    elif mode == "construir" and st.session_state.get("build_done", False):
+    elif mode == "construir":
         entrada = float(st.session_state.get("entrada_build", 0.0) or 0.0)
         mensal  = float(st.session_state.get("mensal_build", 0.0) or 0.0)
-
     else:
         return
 
+    # 3) Se ainda não há valores válidos, não mostrar
     if entrada <= 0 or mensal <= 0:
         return
 
@@ -846,12 +573,6 @@ def ui_sticky_summary(container):
     """
     container.markdown(html, unsafe_allow_html=True)
 
-
-# placeholder + render (tem de vir DEPOIS da função)
-sticky_placeholder = st.empty()
-ui_sticky_summary(sticky_placeholder)
-
-
 # -------------------------------------------------
 # Toggle UI
 # -------------------------------------------------
@@ -861,23 +582,20 @@ modo_ui = st.radio(
     [COPY["layout_opt_cols"], COPY["layout_opt_tabs"]],
     horizontal=True,
 )
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)  # ✅ fechar o card do toggle
 
 
 # ================================
 # Secção COMPRAR
 # ================================
-
 def ui_comprar():
+    
+
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown(f"### {COPY['buy_title']}")
     st.caption(COPY["buy_body"])
 
-    # ----------------------------
-    # FORM (inputs)
-    # ----------------------------
     with st.form("form_comprar", clear_on_submit=False):
-
         colL, colR = st.columns(2)
 
         with colL:
@@ -900,109 +618,106 @@ def ui_comprar():
                 index=0,
             )
 
-        colA, colB, colC = st.columns(3)
+        
+        entrada_pct = st.number_input(
+            "% Entrada",
+            min_value=0.0,
+            max_value=100.0,
+            value=float(ss_get(K("comprar", "entrada_pct"), 10.0)),
+            step=1.0,
+            help=TIPS["entrada_pct"],
+            key=K("comprar", "entrada_pct_input"),
+        ) / 100.0
 
-        with colA:
-            entrada_pct = st.number_input(
-                "% Entrada",
-                min_value=0.0,
-                max_value=100.0,
-                value=float(ss_get(K("comprar", "entrada_pct"), 10.0)),
-                step=1.0,
-                help=TIPS["entrada_pct"],
-                key=K("comprar", "entrada_pct_input"),
-            ) / 100.0
 
-        with colB:
-            taeg_anual = st.number_input(
-                "Taxa anual (TAEG %)",
-                min_value=0.0,
-                value=float(ss_get(K("comprar", "taeg"), 4.0)),
-                step=0.1,
-                help=TIPS["taeg"],
-                key=K("comprar", "taeg_input"),
-            ) / 100.0
+        taeg_anual = st.number_input(
+            "Taxa anual (TAEG %)",
+            min_value=0.0,
+            value=float(ss_get(K("comprar", "taeg"), 4.0)),
+            step=0.1,
+            help=TIPS["taeg"],
+            key=K("comprar", "taeg_input"),
+        ) / 100.0
 
-        with colC:
-            prazo_anos = st.number_input(
-                "Prazo (anos)",
-                min_value=1,
-                max_value=50,
-                value=int(ss_get(K("comprar", "prazo"), 30)),
-                step=1,
-                help=TIPS["prazo"],
-                key=K("comprar", "prazo_input"),
-            )
 
-        with st.expander("➕ Custos adicionais (opcional, mas recomendado)", expanded=False):
-            custo_avaliacao = st.number_input(
-                "Avaliação + despesas iniciais (€)",
-                min_value=0,
-                step=50,
-                value=int(ss_get(K("comprar", "custo_avaliacao"), 1000)),
-                help=TIPS["custo_avaliacao"],
-                key=K("comprar", "custo_avaliacao_input"),
-            )
-            obras_mob = st.number_input(
-                "Obras / mobiliário inicial (€)",
-                min_value=0,
-                step=250,
-                value=int(ss_get(K("comprar", "obras_mob"), 0)),
-                help=TIPS["obras_mob"],
-                key=K("comprar", "obras_mob_input"),
-            )
-            outros_extra = st.number_input(
-                "Outros custos (€)",
-                min_value=0,
-                step=100,
-                value=int(ss_get(K("comprar", "outros_extra"), 0)),
-                help=TIPS["outros_custos"],
-                key=K("comprar", "outros_extra_input"),
-            )
+        prazo_anos = st.number_input(
+            "Prazo (anos)",
+            min_value=1,
+            max_value=50,
+            value=int(ss_get(K("comprar", "prazo"), 30)),
+            step=1,
+            help=TIPS["prazo"],
+            key=K("comprar", "prazo_input"),
+        )
 
-        colX, colY = st.columns(2)
-        with colX:
-            condo = st.number_input(
-                "Condomínio / Manutenção (€/mês)",
-                min_value=0.0,
-                value=float(ss_get(K("comprar", "condo"), 0.0)),
-                step=5.0,
-                help=TIPS["condo"],
-                key=K("comprar", "condo_input"),
-            )
-            seguros = st.number_input(
-                "Seguros (€/mês)",
-                min_value=0.0,
-                value=float(ss_get(K("comprar", "seguros"), 0.0)),
-                step=5.0,
-                help=TIPS["seguros"],
-                key=K("comprar", "seguros_input"),
-            )
+        submitted = st.form_submit_button("✅ Calcular compra")
 
-        with colY:
-            st.caption("💡 Dica: custos mensais “pequenos” (condomínio/seguros) mudam a realidade do orçamento.")
+    # ⬇️ Só calcula quando o utilizador clica
+    if submitted:
+        is_hpp = (tipo_imovel == "Habitação Própria Permanente")
+        imt = calc_imt_2025(preco_casa, hab_pp=is_hpp)
+        selo = 0.008 * float(preco_casa)
 
-        submitted = st.form_submit_button("✅ Calcular compra", use_container_width=True)
+        escritura_regs = 1000.0
+        custos_compra = imt + selo + escritura_regs
+
+        entrada = float(preco_casa) * float(entrada_pct)
+        financiado = max(0.0, float(preco_casa) - entrada)
+        prestacao = calc_prestacao(financiado, taeg_anual, prazo_anos)
+
+        st.session_state["upfront_buy"] = float(entrada + custos_compra)
+        st.session_state["mensal_compra"] = float(prestacao)
+        st.session_state["financiado"] = float(financiado)
+        st.session_state["imt_2025"] = float(imt)
+        st.session_state["has_results"] = True
+
+        st.success("Cenário de compra calculado ✅")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
     # ----------------------------
-    # CÁLCULOS (só quando clica)
+    # Cálculos
     # ----------------------------
-    if not submitted:
-        st.markdown("</div>", unsafe_allow_html=True)
-        return
-
     is_hpp = (tipo_imovel == "Habitação Própria Permanente")
     imt = calc_imt_2025(preco_casa, hab_pp=is_hpp)
     selo = 0.008 * float(preco_casa)
 
     escritura_regs = 1000.0
 
-    custos_extra = float(custo_avaliacao) + float(obras_mob) + float(outros_extra)
-    custos_compra = float(imt) + float(selo) + float(escritura_regs) + float(custos_extra)
+    custo_avaliacao = float(st.session_state.get(K("comprar", "custo_avaliacao"), 1000.0))
+    obras_mob = float(st.session_state.get(K("comprar", "obras_mob"), 0.0))
+    outros_extra = float(st.session_state.get(K("comprar", "outros_extra"), 0.0))
+
+    custos_extra = custo_avaliacao + obras_mob + outros_extra
+    custos_compra = imt + selo + escritura_regs + custos_extra
 
     entrada = float(preco_casa) * float(entrada_pct)
     financiado = max(0.0, float(preco_casa) - entrada)
     prestacao = calc_prestacao(financiado, taeg_anual, prazo_anos)
+
+    colX, colY = st.columns(2)
+
+    with colX:
+        condo = st.number_input(
+            "Condomínio / Manutenção (€/mês)",
+            min_value=0.0,
+            value=float(ss_get(K("comprar", "condo"), 0.0)),
+            step=5.0,
+            help=TIPS["condo"],
+            key=K("comprar", "condo_input"),
+        )
+        seguros = st.number_input(
+            "Seguros (€/mês)",
+            min_value=0.0,
+            value=float(ss_get(K("comprar", "seguros"), 0.0)),
+            step=5.0,
+            help=TIPS["seguros"],
+            key=K("comprar", "seguros_input"),
+        )
+
+    with colY:
+        st.caption("💡 Dica: custos mensais “pequenos” (condomínio/seguros) mudam a realidade do orçamento.")
 
     mensal_compra = float(prestacao) + float(condo) + float(seguros)
     upfront_buy = float(entrada) + float(custos_compra)
@@ -1013,274 +728,158 @@ def ui_comprar():
         st.caption(
             f"IMT 2025: {euro0(imt)} | Selo: {euro0(selo)} | Escritura/registos: {euro0(escritura_regs)} | Extras: {euro0(custos_extra)}"
         )
-    
+
     with col2:
         st.metric("Prestação (crédito)", euro0(prestacao))
         st.metric("Mensal total (com custos)", euro0(mensal_compra))
 
-# ----------------------------
-    # Guardar resultados (para sticky/comparar)
-    # ----------------------------
-    st.session_state["upfront_buy"]   = float(upfront_buy)
+    st.session_state["upfront_buy"] = float(upfront_buy)
     st.session_state["mensal_compra"] = float(mensal_compra)
-    st.session_state["financiado"]    = float(financiado)
-    st.session_state["imt_2025"]      = float(imt)
+    st.session_state["financiado"] = float(financiado)
+    st.session_state["condo"] = float(condo)
+    st.session_state["seguros"] = float(seguros)
+    st.session_state["imt_2025"] = float(imt)
 
-    # Para o construir usar a mesma base (TAEG/prazo)
-    st.session_state["taeg_anual"]  = float(taeg_anual)
-    st.session_state["prazo_anos"]  = int(prazo_anos)
-
-    # Estado UI (sticky + último calculado)
-    st.session_state["has_results"] = True
-    st.session_state["active_mode"] = "comprar"
-
-    st.success("Cenário de compra calculado ✅")
     st.markdown("</div>", unsafe_allow_html=True)
 
-
 # ================================
-# Secção CONSTRUIR (v3) — dinâmico + sem URL
+# Secção CONSTRUIR
 # ================================
 def ui_construir():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.markdown(f"### {COPY['build_title']}")
     st.caption(COPY["build_body"])
 
-    # ----------------------------
-    # Sistemas (defaults 2026 - editáveis)
-    # Nota: defaults são ponto de partida (mercado varia).
-    # ----------------------------
+    colL, colR = st.columns(2)
 
-    SYSTEMS = {
-        "Convencional": {
-            "custo_m2_default": 1200,
-            "fator": 1.00,
-            "prazo_meses_default": 14,
-            "pros": [
-                "Mais comum e fácil de comparar orçamentos",
-                "Boa aceitação bancária/seguradoras",
-                "Flexível em projeto e alterações",
-            ],
-            "cons": [
-                "Normalmente mais lento",
-                "Maior risco de derrapagens (mão de obra/atrasos)",
-                "Dependente de equipas e disponibilidade local",
-            ],
-        },
-        "LSF (aço leve)": {
-            "custo_m2_default": 1100,
-            "fator": 0.95,
-            "prazo_meses_default": 10,
-            "pros": [
-                "Construção mais rápida e previsível",
-                "Obra mais “seca” (menos tempos de cura)",
-                "Boa eficiência térmica (depende do detalhe do sistema)",
-            ],
-            "cons": [
-                "Qualidade depende MUITO do fabricante/montagem",
-                "Menos fornecedores (comparação pode ser difícil)",
-                "Detalhes (pontes térmicas/isolamentos) são críticos",
-            ],
-        },
-        "Modular / 3E": {
-            "custo_m2_default": 1050,
-            "fator": 0.92,
-            "prazo_meses_default": 8,
-            "pros": [
-                "Prazo geralmente mais curto",
-                "Maior controlo industrial (consistência)",
-                "Menos variáveis em obra (depende do modelo)",
-            ],
-            "cons": [
-                "Logística/transportes podem pesar (acessos)",
-                "Limitações de personalização (alguns fornecedores)",
-                "Prazos dependem da fila de produção",
-            ],
-        },
-        "Madeira / CLT": {
-            "custo_m2_default": 1350,
-            "fator": 1.03,
-            "prazo_meses_default": 9,
-            "pros": [
-                "Rápida (sistemas industrializados)",
-                "Conforto térmico/acústico excelente (bem executado)",
-                "Pegada carbónica potencialmente menor",
-            ],
-            "cons": [
-                "Pode ser mais caro (material + detalhe + acabamentos)",
-                "Exige bom projeto de humidades/ventilação",
-                "Nem todos os bancos/seguros tratam igual (varia)",
-            ],
-        },
-    }
+    with colL:
+        url_terreno = st.text_input(
+            COPY["build_link_label"],
+            help=TIPS["url_terreno"],
+            key=K("construir", "url_terreno"),
+        )
 
-    # ----------------------------
-    # 1) Escolha do sistema FORA do form (para ser dinâmico)
-    # ----------------------------
-    colA, colB = st.columns([1.2, 1.0])
-    with colA:
+        preco_terreno = st.number_input(
+            "Preço do terreno (€)",
+            step=1000,
+            min_value=0,
+            value=int(ss_get(K("construir", "preco_terreno"), 50_000)),
+            help=TIPS["preco_terreno"],
+            key=K("construir", "preco_terreno_input"),
+        )
+        st.session_state[K("construir", "preco_terreno")] = preco_terreno
+
+    with colR:
         estrutura = st.selectbox(
             "Sistema construtivo",
-            list(SYSTEMS.keys()),
+            ["Convencional", "LSF (aço leve)", "Modular / 3E"],
             help=TIPS["estrutura"],
             key=K("construir", "estrutura"),
             index=0,
         )
 
-    # prós/contras dinâmicos (já atualiza ao mudar o selectbox)
-    st.markdown("##### ✅ Prós & ❗Contras (para decidir rápido)")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("**Vantagens**")
-        for p in SYSTEMS[estrutura]["pros"]:
-            st.write(f"• {p}")
-    with c2:
-        st.markdown("**Pontos de atenção**")
-        for c in SYSTEMS[estrutura]["cons"]:
-            st.write(f"• {c}")
+        area_m2 = st.number_input(
+            "Área útil (m²)",
+            min_value=40,
+            value=int(ss_get(K("construir", "area_m2"), 120)),
+            step=5,
+            help=TIPS["area_m2"],
+            key=K("construir", "area_m2_input"),
+        )
 
-    st.caption(
-        "📌 Nota 2026: custos variam muito por acabamentos e zona. "
-        "Usa estes valores como ponto de partida e ajusta com orçamentos reais."
-    )
+        custo_m2 = st.number_input(
+            "Custo base construção (€/m²)",
+            min_value=600,
+            value=int(ss_get(K("construir", "custo_m2"), 1100)),
+            step=50,
+            help=TIPS["custo_m2"],
+            key=K("construir", "custo_m2_input"),
+        )
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        iva_reduzido = st.checkbox(
+            "IVA reduzido (ex.: 6%)",
+            value=bool(ss_get(K("construir", "iva_red"), True)),
+            help=TIPS["iva_reduzido"],
+            key=K("construir", "iva_reduzido"),
+        )
+
+        imprevistos_pct = st.slider(
+            "Imprevistos (%)",
+            0,
+            20,
+            value=int(ss_get(K("construir", "imp_pct"), 10)),
+            help=TIPS["imprevistos_pct"],
+            key=K("construir", "imp_prev"),
+        )
+
+    with col2:
+        projetos_lic = st.number_input(
+            "Projetos & Licenças (€)",
+            value=float(ss_get(K("construir", "proj"), 8000.0)),
+            step=1000.0,
+            min_value=0.0,
+            help=TIPS["projetos_lic"],
+            key=K("construir", "proj_input"),
+        )
+
+    with col3:
+        fiscalizacao = st.number_input(
+            "Fiscalização/Coordenação (€)",
+            value=float(ss_get(K("construir", "fisc"), 3000.0)),
+            step=500.0,
+            min_value=0.0,
+            help=TIPS["fiscalizacao"],
+            key=K("construir", "fisc_input"),
+        )
 
     st.divider()
 
-    # ----------------------------
-    # 2) FORM: inputs (só calcula quando clicas)
-    # ----------------------------
-    with st.form("form_construir", clear_on_submit=False):
-        colL, colR = st.columns(2)
+    colM, colN = st.columns(2)
 
-        with colL:
-            preco_terreno = st.number_input(
-                "Preço do terreno (€)",
-                step=1000,
-                min_value=0,
-                value=int(ss_get(K("construir", "preco_terreno"), 50_000)),
-                help=TIPS["preco_terreno"],
-                key=K("construir", "preco_terreno_input"),
-            )
+    with colM:
+        entrada_pct_build = st.slider(
+            "% Entrada (construção)",
+            0.0,
+            50.0,
+            value=float(ss_get(K("construir", "entrada_pct_build"), 10.0)),
+            step=1.0,
+            help=TIPS["entrada_pct_build"],
+            key=K("construir", "entrada_constr"),
+        ) / 100.0
 
-        with colR:
-            area_m2 = st.number_input(
-                "Área útil (m²)",
-                min_value=40,
-                value=int(ss_get(K("construir", "area_m2"), 120)),
-                step=5,
-                help=TIPS["area_m2"],
-                key=K("construir", "area_m2_input"),
-            )
+        cond_man_build = st.number_input(
+            "Seguros + Manutenção (€/mês)",
+            value=float(ss_get(K("construir", "cond_build"), 40.0)),
+            step=5.0,
+            min_value=0.0,
+            help=TIPS["cond_man_build"],
+            key=K("construir", "cond_build_input"),
+        )
 
-            # default do custo/m² depende do sistema (editável)
-            custo_m2_default = int(SYSTEMS[estrutura]["custo_m2_default"])
-            custo_m2 = st.number_input(
-                "Custo base construção (€/m²)",
-                min_value=600,
-                value=int(ss_get(K("construir", "custo_m2"), custo_m2_default)),
-                step=50,
-                help=TIPS["custo_m2"],
-                key=K("construir", "custo_m2_input"),
-            )
+    with colN:
+        _ = st.slider(
+            "Prazo de obra (meses)",
+            6,
+            24,
+            value=int(ss_get(K("construir", "obra_meses"), 12)),
+            help=TIPS["prazo_obra"],
+            key=K("construir", "prazo_obra"),
+        )
 
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            iva_reduzido = st.checkbox(
-                "IVA reduzido (ex.: 6%)",
-                value=bool(ss_get(K("construir", "iva_red"), False)),
-                help=(
-                    "⚠️ Nem toda a construção nova tem IVA 6%. "
-                    "Em geral, 6% aplica-se em situações específicas (ex.: certas empreitadas de reabilitação/ARU). "
-                    "Confirma com técnico/contabilista."
-                ),
-                key=K("construir", "iva_reduzido"),
-            )
-
-            imprevistos_pct = st.slider(
-                "Imprevistos (%)",
-                0,
-                20,
-                value=int(ss_get(K("construir", "imp_pct"), 10)),
-                help=TIPS["imprevistos_pct"],
-                key=K("construir", "imp_prev"),
-            )
-
-        with col2:
-            projetos_lic = st.number_input(
-                "Projetos & Licenças (€)",
-                value=float(ss_get(K("construir", "proj"), 8000.0)),
-                step=1000.0,
-                min_value=0.0,
-                help=TIPS["projetos_lic"],
-                key=K("construir", "proj_input"),
-            )
-
-        with col3:
-            fiscalizacao = st.number_input(
-                "Fiscalização/Coordenação (€)",
-                value=float(ss_get(K("construir", "fisc"), 3000.0)),
-                step=500.0,
-                min_value=0.0,
-                help=TIPS["fiscalizacao"],
-                key=K("construir", "fisc_input"),
-            )
-
-        st.divider()
-
-        colM, colN = st.columns(2)
-
-        with colM:
-            entrada_pct_build = st.slider(
-                "% Entrada (construção)",
-                0.0,
-                50.0,
-                value=float(ss_get(K("construir", "entrada_pct_build"), 10.0)),
-                step=1.0,
-                help=TIPS["entrada_pct_build"],
-                key=K("construir", "entrada_constr"),
-            ) / 100.0
-
-            cond_man_build = st.number_input(
-                "Seguros + Manutenção (€/mês)",
-                value=float(ss_get(K("construir", "cond_build"), 40.0)),
-                step=5.0,
-                min_value=0.0,
-                help=TIPS["cond_man_build"],
-                key=K("construir", "cond_build_input"),
-            )
-
-        with colN:
-            prazo_default = int(SYSTEMS[estrutura]["prazo_meses_default"])
-            prazo_obra_meses = st.slider(
-                "Prazo de obra (meses)",
-                6,
-                24,
-                value=int(ss_get(K("construir", "obra_meses"), prazo_default)),
-                help=TIPS["prazo_obra"],
-                key=K("construir", "prazo_obra"),
-            )
-
-        submitted = st.form_submit_button("✅ Calcular construção", use_container_width=True)
-
-
-    if not submitted:
-        st.markdown("</div>", unsafe_allow_html=True)
-        return
-
-    # ----------------------------
-    # Cálculo (não apaga Comprar)
-    # ----------------------------
-    fator = float(SYSTEMS[estrutura]["fator"])
+    # --- Ajuste simples por sistema construtivo (MVP) ---
+    fator = 1.00
+    if estrutura == "LSF (aço leve)":
+        fator = 0.95
+    elif estrutura == "Modular / 3E":
+        fator = 0.90
 
     custo_construcao_base = float(area_m2) * float(custo_m2) * fator
-
     iva_pct = 0.06 if iva_reduzido else 0.23
-
-    iva_construcao = custo_construcao_base * float(iva_pct)
-
-
     imprevistos = custo_construcao_base * (float(imprevistos_pct) / 100.0)
+    iva_construcao = custo_construcao_base * float(iva_pct)
 
     total_construcao = (
         float(preco_terreno)
@@ -1291,7 +890,7 @@ def ui_construir():
         + float(fiscalizacao)
     )
 
-    # usa a taxa/prazo calculados em Comprar (se existirem)
+    # Usa taxa/prazo da secção Comprar (para comparar com a mesma base)
     taeg_anual = float(st.session_state.get("taeg_anual", 0.04))
     prazo_anos = int(st.session_state.get("prazo_anos", 30))
 
@@ -1300,30 +899,24 @@ def ui_construir():
     prest_build = calc_prestacao(financiado_build, taeg_anual, prazo_anos)
     mensal_build = float(prest_build) + float(cond_man_build)
 
-    
     colX, colY = st.columns(2)
+
     with colX:
         st.metric("Total do projeto (estimado)", euro0(total_construcao))
         st.caption(
             f"Base: {euro0(custo_construcao_base)} | IVA: {euro0(iva_construcao)} | Imprevistos: {euro0(imprevistos)}"
         )
-    
+
     with colY:
         st.metric("Entrada necessária", euro0(entrada_build))
         st.metric("Prestação estimada (crédito)", euro0(prest_build))
         st.caption(f"Mensal total (com seguros/manut.): {euro0(mensal_build)}")
 
-    # guardar resultados SEM mexer nos de comprar
     st.session_state["entrada_build"] = float(entrada_build)
     st.session_state["mensal_build"] = float(mensal_build)
 
-    # estado UI
-    st.session_state["has_results"] = True
-    st.session_state["active_mode"] = "construir"
-
-    st.success("Cenário de construção calculado ✅")
     st.markdown("</div>", unsafe_allow_html=True)
-
+    st.session_state["has_results"] = True
 
 
 # ================================
@@ -1393,7 +986,7 @@ def ui_arrendar_estrategia():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Comparar (apenas aquisição)
+# Comparar (apenas aquisição) — sem gráfico
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -1414,22 +1007,27 @@ def ui_comparar():
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    if mensal_buy > 0 and mensal_build > 0:
-        ui_wow_result(
-            upfront_buy,
-            mensal_buy,
-            upfront_build,
-            mensal_build,
-        )
-    else:
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("À cabeça (comprar)", euro0(upfront_buy))
-            st.metric("Mensal (comprar)", euro0(mensal_buy))
-        with col2:
-            st.metric("À cabeça (construir)", euro0(upfront_build))
-            st.metric("Mensal (construir)", euro0(mensal_build))
 
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("À cabeça (comprar)", euro0(upfront_buy))
+        st.metric("Mensal (comprar)", euro0(mensal_buy))
+    with col2:
+        st.metric("À cabeça (construir)", euro0(upfront_build))
+        st.metric("Mensal (construir)", euro0(mensal_build))
+
+    # vencedor (mensal)
+    if mensal_buy > 0 and mensal_build > 0:
+        if mensal_buy < mensal_build:
+            winner = "Comprar"
+            diff = mensal_build - mensal_buy
+        else:
+            winner = "Construir"
+            diff = mensal_buy - mensal_build
+
+        st.markdown("#### 🏆 Melhor escolha neste cenário")
+        st.success(f"Mais leve no orçamento mensal: **{winner}** (diferença ~ {euro0(diff)}/mês)")
+    else:
         st.markdown("#### 🧭 Nota")
         st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 

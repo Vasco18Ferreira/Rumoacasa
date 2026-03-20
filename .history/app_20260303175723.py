@@ -10,27 +10,22 @@ import altair as alt
 # COPY PREMIUM (PT) — RumoCasa
 # ================================
 COPY = {
-    "app_title": "RumoCasa 🏡",
-
-    "app_tagline": "Compara cenários e decide a tua casa com mais clareza.",
-
-    "layout_label": "Como preferes ver a simulação?",
-    "layout_opt_cols": "Comparação lado a lado",
-    "layout_opt_tabs": "Ver por separadores",
-
-    "hero_title": "Comprar ou construir casa? Decide com números reais.",
-
-    "hero_subtitle": (
-        "Compara cenários, estima a entrada necessária, a prestação mensal e o impacto real da tua decisão "
-        "antes de avançar."
+    "app_title": "RumoCasa 🏡 Planeador Habitacional",
+    "app_tagline": "O planeador inteligente para a tua decisão de habitação.",
+    "layout_label": "Disposição",
+    "layout_opt_cols": "Colunas lado a lado",
+    "layout_opt_tabs": "Abas separadas",
+    "hero_body": (
+        "Decide com números — não com achismos. "
+        "Compara Comprar, Construir ou Arrendar estrategicamente, percebe a entrada necessária, "
+        "a prestação mensal e o impacto real dos juros antes de tomar decisões."
     ),
 
     "section_simular_title": "📊 O que queres simular?",
-
     "section_simular_body": (
-        "Escolhe o cenário que estás a considerar e percebe, de forma clara, "
-        "quanto precisas de entrada, quanto poderás pagar por mês e qual o impacto total da decisão. "
-        "O RumoCasa ajuda-te a comparar com mais clareza e menos dúvida."
+        "Escolhe o cenário que estás a considerar e vê, de forma clara: "
+        "quanto precisas à cabeça, quanto vais pagar todos os meses e o custo real ao longo do tempo. "
+        "O RumoCasa ajuda-te a transformar uma decisão emocional numa decisão informada."
     ),
 
     "kpi_bar_hint": (
@@ -144,6 +139,7 @@ st.set_page_config(
 
 # -------------------------------------------------
 # BOOT RESET — garante app limpa ao abrir
+# (Põe isto ANTES do CSS e antes de usar session_state)
 # -------------------------------------------------
 if "boot_done" not in st.session_state:
     st.session_state["boot_done"] = True
@@ -212,96 +208,6 @@ def calc_imt_2025(valor: float, hab_pp: bool = True) -> float:
 
     return v * taxa - parcela
 
-def ui_wow_result(compra_entrada, compra_mensal, construir_entrada, construir_mensal):
-    try:
-        compra_entrada = float(compra_entrada or 0)
-        compra_mensal = float(compra_mensal or 0)
-        construir_entrada = float(construir_entrada or 0)
-        construir_mensal = float(construir_mensal or 0)
-    except Exception:
-        return
-
-    if compra_mensal <= 0 or construir_mensal <= 0:
-        return
-
-    if construir_mensal < compra_mensal:
-        best_name = "Construir"
-        best_monthly = construir_mensal
-        best_entry = construir_entrada
-        alt_name = "Comprar"
-        alt_monthly = compra_mensal
-        alt_entry = compra_entrada
-        diff = compra_mensal - construir_mensal
-        note = f"Neste cenário, construir reduz a prestação mensal em cerca de {euro0(diff)}."
-    elif compra_mensal < construir_mensal:
-        best_name = "Comprar"
-        best_monthly = compra_mensal
-        best_entry = compra_entrada
-        alt_name = "Construir"
-        alt_monthly = construir_mensal
-        alt_entry = construir_entrada
-        diff = construir_mensal - compra_mensal
-        note = f"Neste cenário, comprar reduz a prestação mensal em cerca de {euro0(diff)}."
-    else:
-        best_name = "Empate técnico"
-        best_monthly = compra_mensal
-        best_entry = compra_entrada
-        alt_name = "Construir"
-        alt_monthly = construir_mensal
-        alt_entry = construir_entrada
-        diff = 0
-        note = "Neste cenário, a prestação mensal estimada é muito semelhante nas duas opções."
-
-    html = f"""
-    <div class="rc-wow-wrap">
-      <div class="rc-wow-title">✨ Comparação rápida do cenário</div>
-
-      <div class="rc-wow-grid">
-        <div class="rc-wow-card best">
-          <div class="rc-wow-badge best">Melhor opção neste cenário</div>
-          <h4>{best_name}</h4>
-          <div class="rc-wow-main">{euro0(best_monthly)}</div>
-          <div class="rc-wow-main-label">prestação mensal estimada</div>
-
-          <div class="rc-wow-list">
-            <div class="rc-wow-item">
-              <span>Entrada estimada</span>
-              <strong>{euro0(best_entry)}</strong>
-            </div>
-            <div class="rc-wow-item">
-              <span>Mensalidade</span>
-              <strong>{euro0(best_monthly)}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="rc-wow-card">
-          <div class="rc-wow-badge alt">Alternativa</div>
-          <h4>{alt_name}</h4>
-          <div class="rc-wow-main">{euro0(alt_monthly)}</div>
-          <div class="rc-wow-main-label">prestação mensal estimada</div>
-
-          <div class="rc-wow-list">
-            <div class="rc-wow-item">
-              <span>Entrada estimada</span>
-              <strong>{euro0(alt_entry)}</strong>
-            </div>
-            <div class="rc-wow-item">
-              <span>Mensalidade</span>
-              <strong>{euro0(alt_monthly)}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="rc-wow-diff">
-        <div class="rc-wow-diff-top">Diferença mensal estimada</div>
-        <div class="rc-wow-diff-value">{euro0(diff)}</div>
-        <div class="rc-wow-note">{note}</div>
-      </div>
-    </div>
-    """
-    st.markdown(html, unsafe_allow_html=True)
 
 # -------------------------------------------------
 # ESTILO GLOBAL RUMOCASA (FORÇAR CLARO)
@@ -516,200 +422,33 @@ html, body, .stApp {
 }
 
 /* ===========================
-   HERO SECTION (PREMIUM)
+   HERO SECTION (CSS)
 =========================== */
-
 .rc-hero{
-  background:
-    radial-gradient(circle at top left, rgba(34,197,94,0.12), transparent 35%),
-    linear-gradient(180deg, rgba(255,255,255,1), rgba(249,250,251,0.96));
-  padding: 3.2rem 1.4rem 2.6rem 1.4rem;
-  border-radius: 24px;
+  background: linear-gradient(
+    180deg,
+    rgba(34,197,94,0.08),
+    rgba(255,255,255,0)
+  );
+  padding: 2.6rem 1rem 2.1rem 1rem;
+  border-radius: 18px;
   text-align: center;
-  margin-bottom: 2rem;
-  border: 1px solid rgba(229,231,235,0.9);
-  box-shadow: 0 18px 50px rgba(15,23,42,0.08);
-}
-
-.rc-hero-inner{
-  max-width: 760px;
-  margin: 0 auto;
-}
-
-.rc-hero-badge{
-  display: inline-block;
-  background: #ffffff;
-  color: #0f5132;
-  border: 1px solid rgba(16,185,129,0.25);
-  padding: 0.45rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(229,231,235,0.8);
 }
 
 .rc-hero-inner h1{
-  font-size: 2.7rem;
-  line-height: 1.15;
-  font-weight: 850;
-  margin: 0 0 0.75rem 0;
-  color: #111827;
-  letter-spacing: -0.02em;
+  font-size: 2.35rem;
+  font-weight: 800;
+  margin: 0 0 0.35rem 0;
+  color: #065F46;
 }
 
 .rc-hero-sub{
-  font-size: 1.08rem;
-  color: #4b5563;
-  line-height: 1.7;
-  margin: 0 auto;
-  max-width: 700px;
-}
-
-.rc-hero-points{
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-}
-
-.rc-hero-points span{
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  padding: 0.55rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1.05rem;
   color: #374151;
-}
-
-/* ===========================
-   RESULTADO WOW
-=========================== */
-
-.rc-wow-wrap{
-  margin: 1.1rem 0 1.6rem 0;
-  animation: rc-fade-in-up 0.5s ease-out both;
-}
-
-.rc-wow-title{
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--rc-gray-900);
-  margin-bottom: 0.9rem;
-}
-
-.rc-wow-grid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.rc-wow-card{
-  background: #ffffff;
-  border: 1px solid var(--rc-gray-200);
-  border-radius: 20px;
-  padding: 1.2rem 1.2rem 1rem 1.2rem;
-  box-shadow: 0 16px 35px rgba(15,23,42,0.06);
-}
-
-.rc-wow-card.best{
-  border: 2px solid rgba(34,197,94,0.55);
-  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
-  box-shadow: 0 20px 40px rgba(34,197,94,0.12);
-}
-
-.rc-wow-badge{
-  display: inline-block;
-  padding: 0.3rem 0.65rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  margin-bottom: 0.7rem;
-}
-
-.rc-wow-badge.best{
-  background: rgba(34,197,94,0.14);
-  color: #166534;
-}
-
-.rc-wow-badge.alt{
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.rc-wow-card h4{
-  margin: 0 0 0.6rem 0;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #111827;
-}
-
-.rc-wow-main{
-  font-size: 1.9rem;
-  font-weight: 850;
-  color: #111827;
-  line-height: 1.1;
-  margin-bottom: 0.2rem;
-}
-
-.rc-wow-main-label{
-  font-size: 0.88rem;
-  color: #6b7280;
-  margin-bottom: 0.9rem;
-}
-
-.rc-wow-list{
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.rc-wow-item{
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.95rem;
-  color: #374151;
-}
-
-.rc-wow-item strong{
-  color: #111827;
-}
-
-.rc-wow-diff{
-  margin-top: 1rem;
-  background: linear-gradient(90deg, rgba(15,81,50,0.08), rgba(255,255,255,1));
-  border: 1px solid rgba(15,81,50,0.12);
-  border-radius: 18px;
-  padding: 0.95rem 1rem;
-}
-
-.rc-wow-diff-top{
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  margin-bottom: 0.25rem;
-}
-
-.rc-wow-diff-value{
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: #0f5132;
-}
-
-.rc-wow-note{
-  margin-top: 0.45rem;
-  font-size: 0.93rem;
-  color: #374151;
-}
-
-@media (max-width: 900px){
-  .rc-wow-grid{
-    grid-template-columns: 1fr;
-  }
+  line-height: 1.6;
+  margin: 0;
 }
 
 </style>
@@ -721,23 +460,8 @@ st.markdown(
     f"""
     <div class="rc-hero rc-fade-in">
       <div class="rc-hero-inner">
-
-        <div class="rc-hero-badge">
-          Planeador habitacional inteligente
-        </div>
-
-        <h1>{COPY["hero_title"]}</h1>
-
-        <p class="rc-hero-sub">
-          {COPY["hero_subtitle"]}
-        </p>
-
-        <div class="rc-hero-points">
-          <span>📊 Comparação simples</span>
-          <span>💰 Estimativas claras</span>
-          <span>🧠 Decisão mais segura</span>
-        </div>
-
+        <h1>🏡 RumoCasa</h1>
+        <p class="rc-hero-sub">{COPY["hero_body"]}</p>
       </div>
     </div>
     """,
@@ -1393,7 +1117,7 @@ def ui_arrendar_estrategia():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Comparar (apenas aquisição)
+# Comparar (apenas aquisição) — sem gráfico
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -1414,22 +1138,27 @@ def ui_comparar():
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    if mensal_buy > 0 and mensal_build > 0:
-        ui_wow_result(
-            upfront_buy,
-            mensal_buy,
-            upfront_build,
-            mensal_build,
-        )
-    else:
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("À cabeça (comprar)", euro0(upfront_buy))
-            st.metric("Mensal (comprar)", euro0(mensal_buy))
-        with col2:
-            st.metric("À cabeça (construir)", euro0(upfront_build))
-            st.metric("Mensal (construir)", euro0(mensal_build))
 
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("À cabeça (comprar)", euro0(upfront_buy))
+        st.metric("Mensal (comprar)", euro0(mensal_buy))
+    with col2:
+        st.metric("À cabeça (construir)", euro0(upfront_build))
+        st.metric("Mensal (construir)", euro0(mensal_build))
+
+    # vencedor (mensal)
+    if mensal_buy > 0 and mensal_build > 0:
+        if mensal_buy < mensal_build:
+            winner = "Comprar"
+            diff = mensal_build - mensal_buy
+        else:
+            winner = "Construir"
+            diff = mensal_buy - mensal_build
+
+        st.markdown("#### 🏆 Melhor escolha neste cenário")
+        st.success(f"Mais leve no orçamento mensal: **{winner}** (diferença ~ {euro0(diff)}/mês)")
+    else:
         st.markdown("#### 🧭 Nota")
         st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 

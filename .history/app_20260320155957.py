@@ -584,134 +584,6 @@ html, body, .stApp {
   color: #374151;
 }
 
-/* ===========================
-   RESULTADO WOW
-=========================== */
-
-.rc-wow-wrap{
-  margin: 1.1rem 0 1.6rem 0;
-  animation: rc-fade-in-up 0.5s ease-out both;
-}
-
-.rc-wow-title{
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--rc-gray-900);
-  margin-bottom: 0.9rem;
-}
-
-.rc-wow-grid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.rc-wow-card{
-  background: #ffffff;
-  border: 1px solid var(--rc-gray-200);
-  border-radius: 20px;
-  padding: 1.2rem 1.2rem 1rem 1.2rem;
-  box-shadow: 0 16px 35px rgba(15,23,42,0.06);
-}
-
-.rc-wow-card.best{
-  border: 2px solid rgba(34,197,94,0.55);
-  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
-  box-shadow: 0 20px 40px rgba(34,197,94,0.12);
-}
-
-.rc-wow-badge{
-  display: inline-block;
-  padding: 0.3rem 0.65rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  margin-bottom: 0.7rem;
-}
-
-.rc-wow-badge.best{
-  background: rgba(34,197,94,0.14);
-  color: #166534;
-}
-
-.rc-wow-badge.alt{
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.rc-wow-card h4{
-  margin: 0 0 0.6rem 0;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #111827;
-}
-
-.rc-wow-main{
-  font-size: 1.9rem;
-  font-weight: 850;
-  color: #111827;
-  line-height: 1.1;
-  margin-bottom: 0.2rem;
-}
-
-.rc-wow-main-label{
-  font-size: 0.88rem;
-  color: #6b7280;
-  margin-bottom: 0.9rem;
-}
-
-.rc-wow-list{
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.rc-wow-item{
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.95rem;
-  color: #374151;
-}
-
-.rc-wow-item strong{
-  color: #111827;
-}
-
-.rc-wow-diff{
-  margin-top: 1rem;
-  background: linear-gradient(90deg, rgba(15,81,50,0.08), rgba(255,255,255,1));
-  border: 1px solid rgba(15,81,50,0.12);
-  border-radius: 18px;
-  padding: 0.95rem 1rem;
-}
-
-.rc-wow-diff-top{
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  margin-bottom: 0.25rem;
-}
-
-.rc-wow-diff-value{
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: #0f5132;
-}
-
-.rc-wow-note{
-  margin-top: 0.45rem;
-  font-size: 0.93rem;
-  color: #374151;
-}
-
-@media (max-width: 900px){
-  .rc-wow-grid{
-    grid-template-columns: 1fr;
-  }
-}
-
 </style>
 """,
     unsafe_allow_html=True,
@@ -1393,7 +1265,7 @@ def ui_arrendar_estrategia():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Comparar (apenas aquisição)
+# Comparar (apenas aquisição) — sem gráfico
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -1414,22 +1286,27 @@ def ui_comparar():
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    if mensal_buy > 0 and mensal_build > 0:
-        ui_wow_result(
-            upfront_buy,
-            mensal_buy,
-            upfront_build,
-            mensal_build,
-        )
-    else:
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("À cabeça (comprar)", euro0(upfront_buy))
-            st.metric("Mensal (comprar)", euro0(mensal_buy))
-        with col2:
-            st.metric("À cabeça (construir)", euro0(upfront_build))
-            st.metric("Mensal (construir)", euro0(mensal_build))
 
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("À cabeça (comprar)", euro0(upfront_buy))
+        st.metric("Mensal (comprar)", euro0(mensal_buy))
+    with col2:
+        st.metric("À cabeça (construir)", euro0(upfront_build))
+        st.metric("Mensal (construir)", euro0(mensal_build))
+
+    # vencedor (mensal)
+    if mensal_buy > 0 and mensal_build > 0:
+        if mensal_buy < mensal_build:
+            winner = "Comprar"
+            diff = mensal_build - mensal_buy
+        else:
+            winner = "Construir"
+            diff = mensal_buy - mensal_build
+
+        st.markdown("#### 🏆 Melhor escolha neste cenário")
+        st.success(f"Mais leve no orçamento mensal: **{winner}** (diferença ~ {euro0(diff)}/mês)")
+    else:
         st.markdown("#### 🧭 Nota")
         st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 

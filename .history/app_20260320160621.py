@@ -1393,7 +1393,7 @@ def ui_arrendar_estrategia():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Comparar (apenas aquisição)
+# Comparar (apenas aquisição) — sem gráfico
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -1414,22 +1414,27 @@ def ui_comparar():
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    if mensal_buy > 0 and mensal_build > 0:
-        ui_wow_result(
-            upfront_buy,
-            mensal_buy,
-            upfront_build,
-            mensal_build,
-        )
-    else:
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("À cabeça (comprar)", euro0(upfront_buy))
-            st.metric("Mensal (comprar)", euro0(mensal_buy))
-        with col2:
-            st.metric("À cabeça (construir)", euro0(upfront_build))
-            st.metric("Mensal (construir)", euro0(mensal_build))
 
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("À cabeça (comprar)", euro0(upfront_buy))
+        st.metric("Mensal (comprar)", euro0(mensal_buy))
+    with col2:
+        st.metric("À cabeça (construir)", euro0(upfront_build))
+        st.metric("Mensal (construir)", euro0(mensal_build))
+
+    # vencedor (mensal)
+    if mensal_buy > 0 and mensal_build > 0:
+        if mensal_buy < mensal_build:
+            winner = "Comprar"
+            diff = mensal_build - mensal_buy
+        else:
+            winner = "Construir"
+            diff = mensal_buy - mensal_build
+
+        st.markdown("#### 🏆 Melhor escolha neste cenário")
+        st.success(f"Mais leve no orçamento mensal: **{winner}** (diferença ~ {euro0(diff)}/mês)")
+    else:
         st.markdown("#### 🧭 Nota")
         st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 
