@@ -719,29 +719,29 @@ html, body, .stApp {
 )
 
 st.markdown(
-    textwrap.dedent(f"""
-        <div class="rc-hero rc-fade-in">
-          <div class="rc-hero-inner">
+    f"""
+    <div class="rc-hero rc-fade-in">
+      <div class="rc-hero-inner">
 
-            <div class="rc-hero-badge">
-              Planeador habitacional inteligente
-            </div>
-
-            <h1>{COPY["hero_title"]}</h1>
-
-            <p class="rc-hero-sub">
-              {COPY["hero_subtitle"]}
-            </p>
-
-            <div class="rc-hero-points">
-              <span>📊 Comparação simples</span>
-              <span>💰 Estimativas claras</span>
-              <span>🧠 Decisão mais segura</span>
-            </div>
-
-          </div>
+        <div class="rc-hero-badge">
+          Planeador habitacional inteligente
         </div>
-    """),
+
+        <h1>{COPY["hero_title"]}</h1>
+
+        <p class="rc-hero-sub">
+          {COPY["hero_subtitle"]}
+        </p>
+
+        <div class="rc-hero-points">
+          <span>📊 Comparação simples</span>
+          <span>💰 Estimativas claras</span>
+          <span>🧠 Decisão mais segura</span>
+        </div>
+
+      </div>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
