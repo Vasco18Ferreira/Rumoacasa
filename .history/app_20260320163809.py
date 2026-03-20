@@ -804,55 +804,53 @@ if "build_done" not in st.session_state:
 # -------------------------------------------------
 # Reset manual (Nova simulação)
 # -------------------------------------------------
-if st.session_state.get("has_results"):
-    colR1, colR2 = st.columns([1, 3])
+colR1, colR2 = st.columns([1, 3])
 
-    with colR1:
-        if st.button("🔄 Nova simulação", use_container_width=True):
+with colR1:
+    if st.button("🔄 Nova simulação", use_container_width=True):
 
-            # 1) limpar resultados (pôr a 0)
-            keys_to_zero = [
-                "upfront_buy", "mensal_compra", "financiado", "imt_2025",
-                "entrada_build", "mensal_build",
-            ]
-            for k in keys_to_zero:
-                st.session_state[k] = 0.0
+        # 1) limpar resultados (pôr a 0)
+        keys_to_zero = [
+            "upfront_buy", "mensal_compra", "financiado", "imt_2025",
+            "entrada_build", "mensal_build",
+        ]
+        for k in keys_to_zero:
+            st.session_state[k] = 0.0
 
-            # 2) estado da UI
-            st.session_state["has_results"] = False
-            st.session_state["buy_done"] = False
-            st.session_state["build_done"] = False
-            st.session_state["active_mode"] = None
+        # 2) estado da UI
+        st.session_state["buy_done"] = False
+        st.session_state["build_done"] = False
+        st.session_state["active_mode"] = None
 
-            # 3) limpar inputs (para não ficarem valores antigos nos campos)
-            keys_to_pop = [
-                # comprar
-                K("comprar", "preco_casa_input"),
-                K("comprar", "entrada_pct_input"),
-                K("comprar", "taeg_input"),
-                K("comprar", "prazo_input"),
-                K("comprar", "condo_input"),
-                K("comprar", "seguros_input"),
-                K("comprar", "custo_avaliacao_input"),
-                K("comprar", "obras_mob_input"),
-                K("comprar", "outros_extra_input"),
+        # 3) limpar inputs (para não ficarem valores antigos nos campos)
+        keys_to_pop = [
+            # comprar
+            K("comprar", "preco_casa_input"),
+            K("comprar", "entrada_pct_input"),
+            K("comprar", "taeg_input"),
+            K("comprar", "prazo_input"),
+            K("comprar", "condo_input"),
+            K("comprar", "seguros_input"),
+            K("comprar", "custo_avaliacao_input"),
+            K("comprar", "obras_mob_input"),
+            K("comprar", "outros_extra_input"),
 
-                # construir
-                K("construir", "preco_terreno_input"),
-                K("construir", "estrutura"),
-                K("construir", "area_m2_input"),
-                K("construir", "custo_m2_input"),
-                K("construir", "proj_input"),
-                K("construir", "fisc_input"),
-                K("construir", "cond_build_input"),
-                K("construir", "prazo_obra"),
-                K("construir", "iva_reduzido"),
-                K("construir", "imp_prev"),
-            ]
-            for k in keys_to_pop:
-                st.session_state.pop(k, None)
+            # construir
+            K("construir", "preco_terreno_input"),
+            K("construir", "estrutura"),
+            K("construir", "area_m2_input"),
+            K("construir", "custo_m2_input"),
+            K("construir", "proj_input"),
+            K("construir", "fisc_input"),
+            K("construir", "cond_build_input"),
+            K("construir", "prazo_obra"),
+            K("construir", "iva_reduzido"),
+            K("construir", "imp_prev"),
+        ]
+        for k in keys_to_pop:
+            st.session_state.pop(k, None)
 
-            st.rerun()
+        st.rerun()
 
 
 # -------------------------------------------------
@@ -1079,7 +1077,6 @@ def ui_comprar():
     # Estado UI (sticky + último calculado)
     st.session_state["has_results"] = True
     st.session_state["active_mode"] = "comprar"
-    st.session_state["buy_done"] = True
 
     st.success("Cenário de compra calculado ✅")
     st.markdown("</div>", unsafe_allow_html=True)
@@ -1367,10 +1364,10 @@ def ui_construir():
     # estado UI
     st.session_state["has_results"] = True
     st.session_state["active_mode"] = "construir"
-    st.session_state["build_done"] = True
 
     st.success("Cenário de construção calculado ✅")
     st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 # ================================

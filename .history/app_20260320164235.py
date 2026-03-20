@@ -1079,7 +1079,6 @@ def ui_comprar():
     # Estado UI (sticky + último calculado)
     st.session_state["has_results"] = True
     st.session_state["active_mode"] = "comprar"
-    st.session_state["buy_done"] = True
 
     st.success("Cenário de compra calculado ✅")
     st.markdown("</div>", unsafe_allow_html=True)
@@ -1367,10 +1366,10 @@ def ui_construir():
     # estado UI
     st.session_state["has_results"] = True
     st.session_state["active_mode"] = "construir"
-    st.session_state["build_done"] = True
 
     st.success("Cenário de construção calculado ✅")
     st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 # ================================
