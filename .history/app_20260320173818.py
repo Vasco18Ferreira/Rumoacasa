@@ -912,14 +912,6 @@ html, body, .stApp {
   color:#166534;
 }
 
-/* ===========================
-   FIX: remover barras estranhas
-=========================== */
-
-div:has(> .rc-sim-card) + div {
-  display: none;
-}
-
 </style>
 """,
     unsafe_allow_html=True,
