@@ -1077,11 +1077,10 @@ def ui_comprar():
     st.markdown("<div class='rc-sim-card buy'>", unsafe_allow_html=True)
     st.markdown(
         f"""
-<div class="rc-sim-head">
-    <div class="rc-badge-buy">💸 Simulação de crédito</div>
-    <div class="rc-sim-title">{COPY['buy_title']}</div>
-    <p class="rc-sim-sub">{COPY['buy_body']}</p>
-</div>
+        <div class="rc-sim-head">
+            <div class="rc-sim-title">{COPY['buy_title']}</div>
+            <p class="rc-sim-sub">{COPY['buy_body']}</p>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -1271,11 +1270,10 @@ def ui_construir():
     st.markdown("<div class='rc-sim-card build'>", unsafe_allow_html=True)
     st.markdown(
         f"""
-<div class="rc-sim-head">
-    <div class="rc-badge-build">🏗️ Projeto completo</div>
-    <div class="rc-sim-title">{COPY['build_title']}</div>
-    <p class="rc-sim-sub">{COPY['build_body']}</p>
-</div>
+        <div class="rc-sim-head">
+            <div class="rc-sim-title">{COPY['build_title']}</div>
+            <p class="rc-sim-sub">{COPY['build_body']}</p>
+        </div>
         """,
         unsafe_allow_html=True,
     )

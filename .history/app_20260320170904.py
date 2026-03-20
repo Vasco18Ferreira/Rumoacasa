@@ -895,30 +895,6 @@ html, body, .stApp {
   margin: 1rem 0 1rem 0;
 }
 
-/* ===========================
-   BADGES (BUY / BUILD)
-=========================== */
-
-.rc-badge-buy,
-.rc-badge-build{
-  display:inline-block;
-  font-size:0.75rem;
-  font-weight:700;
-  padding:4px 10px;
-  border-radius:999px;
-  margin-bottom:6px;
-}
-
-.rc-badge-buy{
-  background: rgba(37,99,235,0.1);
-  color:#1d4ed8;
-}
-
-.rc-badge-build{
-  background: rgba(34,197,94,0.12);
-  color:#166534;
-}
-
 </style>
 """,
     unsafe_allow_html=True,
@@ -1077,11 +1053,10 @@ def ui_comprar():
     st.markdown("<div class='rc-sim-card buy'>", unsafe_allow_html=True)
     st.markdown(
         f"""
-<div class="rc-sim-head">
-    <div class="rc-badge-buy">💸 Simulação de crédito</div>
-    <div class="rc-sim-title">{COPY['buy_title']}</div>
-    <p class="rc-sim-sub">{COPY['buy_body']}</p>
-</div>
+        <div class="rc-sim-head">
+            <div class="rc-sim-title">{COPY['buy_title']}</div>
+            <p class="rc-sim-sub">{COPY['buy_body']}</p>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -1271,11 +1246,10 @@ def ui_construir():
     st.markdown("<div class='rc-sim-card build'>", unsafe_allow_html=True)
     st.markdown(
         f"""
-<div class="rc-sim-head">
-    <div class="rc-badge-build">🏗️ Projeto completo</div>
-    <div class="rc-sim-title">{COPY['build_title']}</div>
-    <p class="rc-sim-sub">{COPY['build_body']}</p>
-</div>
+        <div class="rc-sim-head">
+            <div class="rc-sim-title">{COPY['build_title']}</div>
+            <p class="rc-sim-sub">{COPY['build_body']}</p>
+        </div>
         """,
         unsafe_allow_html=True,
     )
