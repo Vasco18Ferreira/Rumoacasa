@@ -1049,22 +1049,23 @@ st.markdown("</div>", unsafe_allow_html=True)
 # ================================
 # Secção COMPRAR
 # ================================
+
 def ui_comprar():
-    st.markdown("<div class='rc-sim-card buy'>", unsafe_allow_html=True)
-    st.markdown(
-        f"""
-        <div class="rc-sim-head">
-            <div class="rc-sim-title">{COPY['buy_title']}</div>
-            <p class="rc-sim-sub">{COPY['buy_body']}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+st.markdown("<div class='rc-sim-card buy'>", unsafe_allow_html=True)
+st.markdown(
+    f"""
+    <div class="rc-sim-head">
+        <div class="rc-sim-title">{COPY['buy_title']}</div>
+        <p class="rc-sim-sub">{COPY['buy_body']}</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
     # ----------------------------
     # FORM (inputs)
     # ----------------------------
-    with st.form("form_comprar", clear_on_submit=False):
+with st.form("form_comprar", clear_on_submit=False):
 
         colL, colR = st.columns(2)
 
@@ -1149,7 +1150,6 @@ def ui_comprar():
             )
 
         colX, colY = st.columns(2)
-
         with colX:
             condo = st.number_input(
                 "Condomínio / Manutenção (€/mês)",
@@ -1169,9 +1169,7 @@ def ui_comprar():
             )
 
         with colY:
-            st.caption(
-                "💡 Dica: custos mensais “pequenos” (condomínio/seguros) mudam a realidade do orçamento."
-            )
+            st.caption("💡 Dica: custos mensais “pequenos” (condomínio/seguros) mudam a realidade do orçamento.")
 
         submitted = st.form_submit_button("✅ Calcular compra", use_container_width=True)
 
@@ -1182,9 +1180,10 @@ def ui_comprar():
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    is_hpp = tipo_imovel == "Habitação Própria Permanente"
+    is_hpp = (tipo_imovel == "Habitação Própria Permanente")
     imt = calc_imt_2025(preco_casa, hab_pp=is_hpp)
     selo = 0.008 * float(preco_casa)
+
     escritura_regs = 1000.0
 
     custos_extra = float(custo_avaliacao) + float(obras_mob) + float(outros_extra)
@@ -1197,40 +1196,33 @@ def ui_comprar():
     mensal_compra = float(prestacao) + float(condo) + float(seguros)
     upfront_buy = float(entrada) + float(custos_compra)
 
-    st.markdown("<div class='rc-result-box buy'>", unsafe_allow_html=True)
-    st.markdown(
-        "<div class='rc-result-title'>Resultado do cenário de compra</div>",
-        unsafe_allow_html=True,
-    )
+st.markdown("<div class='rc-result-box buy'>", unsafe_allow_html=True)
+st.markdown("<div class='rc-result-title'>Resultado do cenário de compra</div>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
-
-    with col1:
+col1, col2 = st.columns(2)
+with col1:
         st.metric("Entrada necessária (entrada + impostos/custos)", euro0(upfront_buy))
         st.caption(
-            f"IMT 2025: {euro0(imt)} | Selo: {euro0(selo)} | "
-            f"Escritura/registos: {euro0(escritura_regs)} | Extras: {euro0(custos_extra)}"
+            f"IMT 2025: {euro0(imt)} | Selo: {euro0(selo)} | Escritura/registos: {euro0(escritura_regs)} | Extras: {euro0(custos_extra)}"
         )
-
+    
     with col2:
         st.metric("Prestação (crédito)", euro0(prestacao))
         st.metric("Mensal total (com custos)", euro0(mensal_compra))
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ----------------------------
+# ----------------------------
     # Guardar resultados (para sticky/comparar)
     # ----------------------------
-    st.session_state["upfront_buy"] = float(upfront_buy)
+    st.session_state["upfront_buy"]   = float(upfront_buy)
     st.session_state["mensal_compra"] = float(mensal_compra)
-    st.session_state["financiado"] = float(financiado)
-    st.session_state["imt_2025"] = float(imt)
+    st.session_state["financiado"]    = float(financiado)
+    st.session_state["imt_2025"]      = float(imt)
 
     # Para o construir usar a mesma base (TAEG/prazo)
-    st.session_state["taeg_anual"] = float(taeg_anual)
-    st.session_state["prazo_anos"] = int(prazo_anos)
+    st.session_state["taeg_anual"]  = float(taeg_anual)
+    st.session_state["prazo_anos"]  = int(prazo_anos)
 
-    # Estado UI
+    # Estado UI (sticky + último calculado)
     st.session_state["has_results"] = True
     st.session_state["active_mode"] = "comprar"
     st.session_state["buy_done"] = True
@@ -1243,20 +1235,22 @@ def ui_comprar():
 # Secção CONSTRUIR (v3) — dinâmico + sem URL
 # ================================
 def ui_construir():
-    st.markdown("<div class='rc-sim-card build'>", unsafe_allow_html=True)
-    st.markdown(
-        f"""
-        <div class="rc-sim-head">
-            <div class="rc-sim-title">{COPY['build_title']}</div>
-            <p class="rc-sim-sub">{COPY['build_body']}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+st.markdown("<div class='rc-sim-card build'>", unsafe_allow_html=True)
+st.markdown(
+    f"""
+    <div class="rc-sim-head">
+        <div class="rc-sim-title">{COPY['build_title']}</div>
+        <p class="rc-sim-sub">{COPY['build_body']}</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
     # ----------------------------
     # Sistemas (defaults 2026 - editáveis)
+    # Nota: defaults são ponto de partida (mercado varia).
     # ----------------------------
+
     SYSTEMS = {
         "Convencional": {
             "custo_m2_default": 1200,
@@ -1321,10 +1315,9 @@ def ui_construir():
     }
 
     # ----------------------------
-    # 1) Escolha do sistema FORA do form
+    # 1) Escolha do sistema FORA do form (para ser dinâmico)
     # ----------------------------
     colA, colB = st.columns([1.2, 1.0])
-
     with colA:
         estrutura = st.selectbox(
             "Sistema construtivo",
@@ -1334,46 +1327,43 @@ def ui_construir():
             index=0,
         )
 
-    st.markdown("<div class='rc-soft-box'>", unsafe_allow_html=True)
+st.markdown("<div class='rc-soft-box'>", unsafe_allow_html=True)
+st.markdown("<div class='rc-soft-box-title'>✅ Prós & ❗Contras (para decidir rápido)</div>", unsafe_allow_html=True)
+
+c1, c2 = st.columns(2)
+
+with c1:
+    pros_html = "".join([f"<li>{p}</li>" for p in SYSTEMS[estrutura]["pros"]])
     st.markdown(
-        "<div class='rc-soft-box-title'>✅ Prós & ❗Contras (para decidir rápido)</div>",
+        f"""
+        <div class="rc-procon-card">
+            <h5>Vantagens</h5>
+            <ul>{pros_html}</ul>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
-    c1, c2 = st.columns(2)
-
-    with c1:
-        pros_html = "".join([f"<li>{p}</li>" for p in SYSTEMS[estrutura]["pros"]])
-        st.markdown(
-            f"""
-            <div class="rc-procon-card">
-                <h5>Vantagens</h5>
-                <ul>{pros_html}</ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with c2:
-        cons_html = "".join([f"<li>{c}</li>" for c in SYSTEMS[estrutura]["cons"]])
-        st.markdown(
-            f"""
-            <div class="rc-procon-card">
-                <h5>Pontos de atenção</h5>
-                <ul>{cons_html}</ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+with c2:
+    cons_html = "".join([f"<li>{c}</li>" for c in SYSTEMS[estrutura]["cons"]])
     st.markdown(
-        "<div class='rc-note'>📌 Nota 2026: custos variam muito por acabamentos e zona. Usa estes valores como ponto de partida e ajusta com orçamentos reais.</div>",
+        f"""
+        <div class="rc-procon-card">
+            <h5>Pontos de atenção</h5>
+            <ul>{cons_html}</ul>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
-    st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown(
+    "<div class='rc-note'>📌 Nota 2026: custos variam muito por acabamentos e zona. Usa estes valores como ponto de partida e ajusta com orçamentos reais.</div>",
+    unsafe_allow_html=True,
+)
+st.markdown("</div>", unsafe_allow_html=True)
 
     # ----------------------------
-    # 2) FORM: inputs
+    # 2) FORM: inputs (só calcula quando clicas)
     # ----------------------------
     with st.form("form_construir", clear_on_submit=False):
         colL, colR = st.columns(2)
@@ -1398,6 +1388,7 @@ def ui_construir():
                 key=K("construir", "area_m2_input"),
             )
 
+            # default do custo/m² depende do sistema (editável)
             custo_m2_default = int(SYSTEMS[estrutura]["custo_m2_default"])
             custo_m2 = st.number_input(
                 "Custo base construção (€/m²)",
@@ -1488,18 +1479,23 @@ def ui_construir():
 
         submitted = st.form_submit_button("✅ Calcular construção", use_container_width=True)
 
+
     if not submitted:
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
     # ----------------------------
-    # Cálculo
+    # Cálculo (não apaga Comprar)
     # ----------------------------
     fator = float(SYSTEMS[estrutura]["fator"])
+
     custo_construcao_base = float(area_m2) * float(custo_m2) * fator
 
     iva_pct = 0.06 if iva_reduzido else 0.23
+
     iva_construcao = custo_construcao_base * float(iva_pct)
+
+
     imprevistos = custo_construcao_base * (float(imprevistos_pct) / 100.0)
 
     total_construcao = (
@@ -1511,6 +1507,7 @@ def ui_construir():
         + float(fiscalizacao)
     )
 
+    # usa a taxa/prazo calculados em Comprar (se existirem)
     taeg_anual = float(st.session_state.get("taeg_anual", 0.04))
     prazo_anos = int(st.session_state.get("prazo_anos", 30))
 
@@ -1519,28 +1516,20 @@ def ui_construir():
     prest_build = calc_prestacao(financiado_build, taeg_anual, prazo_anos)
     mensal_build = float(prest_build) + float(cond_man_build)
 
-    st.markdown("<div class='rc-result-box build'>", unsafe_allow_html=True)
-    st.markdown(
-        "<div class='rc-result-title'>Resultado do cenário de construção</div>",
-        unsafe_allow_html=True,
-    )
-
+    
     colX, colY = st.columns(2)
-
     with colX:
         st.metric("Total do projeto (estimado)", euro0(total_construcao))
         st.caption(
             f"Base: {euro0(custo_construcao_base)} | IVA: {euro0(iva_construcao)} | Imprevistos: {euro0(imprevistos)}"
         )
-
+    
     with colY:
         st.metric("Entrada necessária", euro0(entrada_build))
         st.metric("Prestação estimada (crédito)", euro0(prest_build))
         st.caption(f"Mensal total (com seguros/manut.): {euro0(mensal_build)}")
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # guardar resultados
+    # guardar resultados SEM mexer nos de comprar
     st.session_state["entrada_build"] = float(entrada_build)
     st.session_state["mensal_build"] = float(mensal_build)
 
