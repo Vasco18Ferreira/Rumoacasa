@@ -718,20 +718,32 @@ html, body, .stApp {
     unsafe_allow_html=True,
 )
 
-hero_html = f"""<div class="rc-hero rc-fade-in">
-<div class="rc-hero-inner">
-<div class="rc-hero-badge">Planeador habitacional inteligente</div>
-<h1>{COPY["hero_title"]}</h1>
-<p class="rc-hero-sub">{COPY["hero_subtitle"]}</p>
-<div class="rc-hero-points">
-<span>📊 Comparação simples</span>
-<span>💰 Estimativas claras</span>
-<span>🧠 Decisão mais segura</span>
-</div>
-</div>
-</div>"""
+st.markdown(
+    textwrap.dedent(f"""
+        <div class="rc-hero rc-fade-in">
+          <div class="rc-hero-inner">
 
-st.markdown(hero_html, unsafe_allow_html=True)
+            <div class="rc-hero-badge">
+              Planeador habitacional inteligente
+            </div>
+
+            <h1>{COPY["hero_title"]}</h1>
+
+            <p class="rc-hero-sub">
+              {COPY["hero_subtitle"]}
+            </p>
+
+            <div class="rc-hero-points">
+              <span>📊 Comparação simples</span>
+              <span>💰 Estimativas claras</span>
+              <span>🧠 Decisão mais segura</span>
+            </div>
+
+          </div>
+        </div>
+    """),
+    unsafe_allow_html=True,
+)
 
 # -------------------------------------------------
 # Estado UI (uma vez)
