@@ -774,6 +774,16 @@ html, body, .stApp {
   margin-bottom: 1.4rem;
 }
 
+.rc-sim-card::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #22c55e, #0f5132);
+}
+
 .rc-sim-card.buy::before{
   background: linear-gradient(90deg, #10b981, #2563eb);
 }
@@ -891,24 +901,21 @@ html, body, .stApp {
 
 .rc-badge-buy,
 .rc-badge-build{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:0.78rem;
+  display:inline-block;
+  font-size:0.75rem;
   font-weight:700;
-  padding:5px 12px;
+  padding:4px 10px;
   border-radius:999px;
-  margin-bottom:8px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+  margin-bottom:6px;
 }
 
 .rc-badge-buy{
-  background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(37,99,235,0.05));
+  background: rgba(37,99,235,0.1);
   color:#1d4ed8;
 }
 
 .rc-badge-build{
-  background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05));
+  background: rgba(34,197,94,0.12);
   color:#166534;
 }
 
