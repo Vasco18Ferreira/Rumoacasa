@@ -243,12 +243,12 @@ def ui_wow_result(compra_entrada, compra_mensal, construir_entrada, construir_me
     with col1:
         st.markdown("#### 🏡 Comprar")
         st.metric("Entrada estimada", euro0(compra_entrada))
-        st.metric("Mensal total estimada", euro0(compra_mensal))
+        st.metric("Prestação mensal estimada", euro0(compra_mensal))
 
     with col2:
         st.markdown("#### 🏗️ Construir")
         st.metric("Entrada estimada", euro0(construir_entrada))
-        st.metric("Mensal total estimada", euro0(construir_mensal))
+        st.metric("Prestação mensal estimada", euro0(construir_mensal))
 
     st.markdown(
         f"""
@@ -1657,7 +1657,7 @@ def ui_resultados_cenarios():
 
             st.metric("Total do projeto", euro0(total_construcao))
             st.metric("Entrada necessária", euro0(entrada_build))
-            st.metric("Mensal total", euro0(mensal_build))
+            st.metric("Prestação estimada", euro0(prest_build))
 
             st.markdown(
                 f"<div class='rc-scenario-note'>Base: {euro0(custo_construcao_base)} · IVA: {euro0(iva_construcao)} · Imprevistos: {euro0(imprevistos)} · Mensal total: {euro0(mensal_build)}</div>",
