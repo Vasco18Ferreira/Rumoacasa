@@ -225,35 +225,84 @@ def ui_wow_result(compra_entrada, compra_mensal, construir_entrada, construir_me
     if compra_mensal <= 0 or construir_mensal <= 0:
         return
 
-    if compra_mensal < construir_mensal:
-        melhor = "Comprar"
-        diff = construir_mensal - compra_mensal
-        frase = f"Neste cenário, comprar reduz a prestação mensal em cerca de {euro0(diff)}."
-    elif construir_mensal < compra_mensal:
-        melhor = "Construir"
+    if construir_mensal < compra_mensal:
+        best_name = "Construir"
+        best_monthly = construir_mensal
+        best_entry = construir_entrada
+        alt_name = "Comprar"
+        alt_monthly = compra_mensal
+        alt_entry = compra_entrada
         diff = compra_mensal - construir_mensal
-        frase = f"Neste cenário, construir reduz a prestação mensal em cerca de {euro0(diff)}."
+        note = f"Neste cenário, construir reduz a prestação mensal em cerca de {euro0(diff)}."
+    elif compra_mensal < construir_mensal:
+        best_name = "Comprar"
+        best_monthly = compra_mensal
+        best_entry = compra_entrada
+        alt_name = "Construir"
+        alt_monthly = construir_mensal
+        alt_entry = construir_entrada
+        diff = construir_mensal - compra_mensal
+        note = f"Neste cenário, comprar reduz a prestação mensal em cerca de {euro0(diff)}."
     else:
-        melhor = "Empate técnico"
-        diff = 0.0
-        frase = "Neste cenário, a prestação mensal estimada é muito semelhante nas duas opções."
+        best_name = "Empate técnico"
+        best_monthly = compra_mensal
+        best_entry = compra_entrada
+        alt_name = "Construir"
+        alt_monthly = construir_mensal
+        alt_entry = construir_entrada
+        diff = 0
+        note = "Neste cenário, a prestação mensal estimada é muito semelhante nas duas opções."
 
-    st.markdown("### ✨ Comparação rápida do cenário")
+    html = f"""
+    <div class="rc-wow-wrap">
+      <div class="rc-wow-title">✨ Comparação rápida do cenário</div>
 
-    col1, col2 = st.columns(2)
+      <div class="rc-wow-grid">
+        <div class="rc-wow-card best">
+          <div class="rc-wow-badge best">Melhor opção neste cenário</div>
+          <h4>{best_name}</h4>
+          <div class="rc-wow-main">{euro0(best_monthly)}</div>
+          <div class="rc-wow-main-label">prestação mensal estimada</div>
 
-    with col1:
-        st.markdown("#### 🏡 Comprar")
-        st.metric("Entrada estimada", euro0(compra_entrada))
-        st.metric("Prestação mensal estimada", euro0(compra_mensal))
+          <div class="rc-wow-list">
+            <div class="rc-wow-item">
+              <span>Entrada estimada</span>
+              <strong>{euro0(best_entry)}</strong>
+            </div>
+            <div class="rc-wow-item">
+              <span>Mensalidade</span>
+              <strong>{euro0(best_monthly)}</strong>
+            </div>
+          </div>
+        </div>
 
-    with col2:
-        st.markdown("#### 🏗️ Construir")
-        st.metric("Entrada estimada", euro0(construir_entrada))
-        st.metric("Prestação mensal estimada", euro0(construir_mensal))
+        <div class="rc-wow-card">
+          <div class="rc-wow-badge alt">Alternativa</div>
+          <h4>{alt_name}</h4>
+          <div class="rc-wow-main">{euro0(alt_monthly)}</div>
+          <div class="rc-wow-main-label">prestação mensal estimada</div>
 
-    st.success(f"Melhor opção neste cenário: **{melhor}**")
-    st.info(frase)
+          <div class="rc-wow-list">
+            <div class="rc-wow-item">
+              <span>Entrada estimada</span>
+              <strong>{euro0(alt_entry)}</strong>
+            </div>
+            <div class="rc-wow-item">
+              <span>Mensalidade</span>
+              <strong>{euro0(alt_monthly)}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rc-wow-diff">
+        <div class="rc-wow-diff-top">Diferença mensal estimada</div>
+        <div class="rc-wow-diff-value">{euro0(diff)}</div>
+        <div class="rc-wow-note">{note}</div>
+      </div>
+    </div>
+    """
+    st.markdown(html, unsafe_allow_html=True)
 
 # -------------------------------------------------
 # ESTILO GLOBAL RUMOCASA (FORÇAR CLARO)
