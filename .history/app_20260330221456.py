@@ -1718,19 +1718,19 @@ def ui_comparar():
 
     st.info(
         "Já tens uma ideia clara do teu cenário. "
-        "Agora valida os números com um especialista e avança com confiança."
+        "Agora fala com um especialista para validar e avançar com segurança."
     )
 
-cta_clicked = st.button(
-    "Falar com especialista (gratuito)",
-    use_container_width=True,
-    key="cta_especialista_comparar",
-)
+    cta_clicked = st.button(
+        "👉 Falar com um especialista",
+        use_container_width=True,
+        key="cta_especialista_comparar",
+    )
 
-if cta_clicked:
-    st.success("Em breve vais poder falar com um parceiro certificado 👍")
+    if cta_clicked:
+        st.success("Em breve vais poder falar com um parceiro certificado 👍")
 
-st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
 # Conforto mensal (guia)

@@ -1718,7 +1718,7 @@ def ui_comparar():
 
     st.info(
         "Já tens uma ideia clara do teu cenário. "
-        "Agora valida os números com um especialista e avança com confiança."
+        "Agora fala com um especialista para validar e avançar com segurança."
     )
 
 cta_clicked = st.button(
