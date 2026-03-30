@@ -1649,47 +1649,45 @@ def ui_arrendar_estrategia():
 # ================================
 # Comparar (apenas aquisição)
 # ================================
-def ui_wow_result(compra_entrada, compra_mensal, construir_entrada, construir_mensal):
-    try:
-        compra_entrada = float(compra_entrada or 0)
-        compra_mensal = float(compra_mensal or 0)
-        construir_entrada = float(construir_entrada or 0)
-        construir_mensal = float(construir_mensal or 0)
-    except Exception:
+def ui_comparar():
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.markdown("<h3>📊 Comparar aquisição</h3>", unsafe_allow_html=True)
+
+    st.caption(
+        "💡 No RumoCasa, a comparação prioriza a mensalidade — "
+        "porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia."
+    )
+
+    upfront_buy   = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
+    upfront_build = float(st.session_state.get("entrada_build", 0.0) or 0.0)
+    mensal_buy    = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
+    mensal_build  = float(st.session_state.get("mensal_build", 0.0) or 0.0)
+
+    if mensal_buy <= 0 and mensal_build <= 0:
+        st.info("Preenche **Comprar** e/ou **Construir** para veres a comparação.")
+        st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    if compra_mensal <= 0 or construir_mensal <= 0:
-        return
-
-    if compra_mensal < construir_mensal:
-        melhor = "Comprar"
-        diff = construir_mensal - compra_mensal
-        frase = f"Neste cenário, comprar reduz a prestação mensal em cerca de {euro0(diff)}."
-    elif construir_mensal < compra_mensal:
-        melhor = "Construir"
-        diff = compra_mensal - construir_mensal
-        frase = f"Neste cenário, construir reduz a prestação mensal em cerca de {euro0(diff)}."
+    if mensal_buy > 0 and mensal_build > 0:
+        ui_wow_result(
+            upfront_buy,
+            mensal_buy,
+            upfront_build,
+            mensal_build,
+        )
     else:
-        melhor = "Empate técnico"
-        diff = 0.0
-        frase = "Neste cenário, a prestação mensal estimada é muito semelhante nas duas opções."
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("À cabeça (comprar)", euro0(upfront_buy))
+            st.metric("Mensal (comprar)", euro0(mensal_buy))
+        with col2:
+            st.metric("À cabeça (construir)", euro0(upfront_build))
+            st.metric("Mensal (construir)", euro0(mensal_build))
 
-    st.markdown("### ✨ Comparação rápida do cenário")
+        st.markdown("#### 🧭 Nota")
+        st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("#### 🏡 Comprar")
-        st.metric("Entrada estimada", euro0(compra_entrada))
-        st.metric("Prestação mensal estimada", euro0(compra_mensal))
-
-    with col2:
-        st.markdown("#### 🏗️ Construir")
-        st.metric("Entrada estimada", euro0(construir_entrada))
-        st.metric("Prestação mensal estimada", euro0(construir_mensal))
-
-    st.success(f"Melhor opção neste cenário: **{melhor}**")
-    st.info(frase)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ================================
