@@ -1653,16 +1653,18 @@ def ui_comparar():
         "porque é ela que acompanha a tua vida todos os meses, não só no primeiro dia."
     )
 
-    upfront_buy = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
+    upfront_buy   = float(st.session_state.get("upfront_buy", 0.0) or 0.0)
     upfront_build = float(st.session_state.get("entrada_build", 0.0) or 0.0)
-    mensal_buy = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
-    mensal_build = float(st.session_state.get("mensal_build", 0.0) or 0.0)
+    mensal_buy    = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
+    mensal_build  = float(st.session_state.get("mensal_build", 0.0) or 0.0)
 
+    # Nenhum cenário preenchido
     if mensal_buy <= 0 and mensal_build <= 0:
         st.info("Preenche **Comprar** e/ou **Construir** para veres a comparação.")
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
+    # Ambos preenchidos → WOW
     if mensal_buy > 0 and mensal_build > 0:
         ui_wow_result(
             upfront_buy,
@@ -1670,6 +1672,8 @@ def ui_comparar():
             upfront_build,
             mensal_build,
         )
+
+    # Apenas um preenchido
     else:
         col1, col2 = st.columns(2)
 
@@ -1683,6 +1687,7 @@ def ui_comparar():
 
         st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 
+    
     st.markdown("### 🚀 Próximo passo")
 
     st.info(
@@ -1690,16 +1695,14 @@ def ui_comparar():
         "Agora fala com um especialista para validar e avançar com segurança."
     )
 
-    cta_clicked = st.button(
+    if st.button(
         "👉 Falar com um especialista",
         use_container_width=True,
-        key="cta_especialista_comparar",
-    )
-
-    if cta_clicked:
+        key="cta_especialista_comparar"
+    ):
         st.success("Em breve vais poder falar com um parceiro certificado 👍")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)s
 
 # ================================
 # Conforto mensal (guia)
