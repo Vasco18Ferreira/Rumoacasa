@@ -238,10 +238,7 @@ def ui_wow_result(compra_entrada, compra_mensal, construir_entrada, construir_me
         diff = 0.0
         frase = "Neste cenário, a prestação mensal estimada é muito semelhante nas duas opções."
 
-    st.markdown(
-        "<div style='font-size:1.4rem; font-weight:800; margin-bottom:0.6rem;'>🎯 Decisão do cenário</div>",
-        unsafe_allow_html=True
-    )
+    st.markdown("### ✨ Comparação rápida do cenário")
 
     col1, col2 = st.columns(2)
 
@@ -255,38 +252,8 @@ def ui_wow_result(compra_entrada, compra_mensal, construir_entrada, construir_me
         st.metric("Entrada estimada", euro0(construir_entrada))
         st.metric("Prestação mensal estimada", euro0(construir_mensal))
 
-    st.markdown(
-        f"""
-<div style="
-    background: linear-gradient(90deg, rgba(34,197,94,0.15), rgba(255,255,255,1));
-    border: 1px solid rgba(34,197,94,0.35);
-    padding: 14px 18px;
-    border-radius: 14px;
-    font-weight: 700;
-    color: #065f46;
-    margin-top: 14px;
-">
-    ✔ Melhor decisão neste cenário: <strong>{melhor}</strong>
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        f"""
-<div style="
-    background: #f1f5f9;
-    border: 1px solid #e5e7eb;
-    padding: 12px 16px;
-    border-radius: 12px;
-    margin-top: 10px;
-    color: #334155;
-">
-    {frase}
-</div>
-""",
-        unsafe_allow_html=True
-    )
+    st.success(f"Melhor opção neste cenário: **{melhor}**")
+    st.info(frase)
 
 # -------------------------------------------------
 # ESTILO GLOBAL RUMOCASA (FORÇAR CLARO)
