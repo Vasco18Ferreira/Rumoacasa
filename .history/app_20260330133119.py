@@ -1245,6 +1245,9 @@ def ui_construir():
         unsafe_allow_html=True,
     )
 
+    # ----------------------------
+    # Sistemas (defaults 2026 - editáveis)
+    # ----------------------------
     SYSTEMS = {
         "Convencional": {
             "custo_m2_default": 1200,
@@ -1476,7 +1479,11 @@ def ui_construir():
 
         submitted = st.form_submit_button("✅ Calcular construção", use_container_width=True)
 
-    # ----------------------------
+    if not submitted:
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
+        # ----------------------------
     # Cálculo (só quando clica)
     # ----------------------------
     if submitted:
@@ -1496,6 +1503,7 @@ def ui_construir():
             + float(fiscalizacao)
         )
 
+        # usa a taxa/prazo calculados em Comprar (se existirem)
         taeg_anual = float(st.session_state.get("taeg_anual", 0.04))
         prazo_anos = int(st.session_state.get("prazo_anos", 30))
 
@@ -1504,11 +1512,13 @@ def ui_construir():
         prest_build = calc_prestacao(financiado_build, taeg_anual, prazo_anos)
         mensal_build = float(prest_build) + float(cond_man_build)
 
+        # ----------------------------
         # guardar resultados
+        # ----------------------------
         st.session_state["entrada_build"] = float(entrada_build)
         st.session_state["mensal_build"] = float(mensal_build)
 
-        # detalhes para manter painel visível
+        # guardar detalhes para manter painel visível
         st.session_state["total_build"] = float(total_construcao)
         st.session_state["prest_build"] = float(prest_build)
         st.session_state["base_build"] = float(custo_construcao_base)

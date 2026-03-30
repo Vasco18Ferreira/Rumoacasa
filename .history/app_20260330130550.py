@@ -1042,6 +1042,7 @@ def ui_comprar():
     # FORM (inputs)
     # ----------------------------
     with st.form("form_comprar", clear_on_submit=False):
+
         colL, colR = st.columns(2)
 
         with colL:
@@ -1151,7 +1152,7 @@ def ui_comprar():
 
         submitted = st.form_submit_button("✅ Calcular compra", use_container_width=True)
 
-    # ----------------------------
+        # ----------------------------
     # CÁLCULOS (só quando clica)
     # ----------------------------
     if submitted:
@@ -1170,23 +1171,25 @@ def ui_comprar():
         mensal_compra = float(prestacao) + float(condo) + float(seguros)
         upfront_buy = float(entrada) + float(custos_compra)
 
-        # Guardar resultados
+        # ----------------------------
+        # Guardar resultados (para sticky/comparar/persistência)
+        # ----------------------------
         st.session_state["upfront_buy"] = float(upfront_buy)
         st.session_state["mensal_compra"] = float(mensal_compra)
         st.session_state["financiado"] = float(financiado)
         st.session_state["imt_2025"] = float(imt)
 
-        # detalhes para manter painel visível
+        # guardar detalhes para manter painel visível
         st.session_state["selo_buy"] = float(selo)
         st.session_state["escritura_buy"] = float(escritura_regs)
         st.session_state["extras_buy"] = float(custos_extra)
         st.session_state["prestacao_buy"] = float(prestacao)
 
-        # base para construir
+        # Para o construir usar a mesma base (TAEG/prazo)
         st.session_state["taeg_anual"] = float(taeg_anual)
         st.session_state["prazo_anos"] = int(prazo_anos)
 
-        # estado UI
+        # Estado UI
         st.session_state["has_results"] = True
         st.session_state["active_mode"] = "comprar"
         st.session_state["buy_done"] = True
@@ -1245,6 +1248,9 @@ def ui_construir():
         unsafe_allow_html=True,
     )
 
+    # ----------------------------
+    # Sistemas (defaults 2026 - editáveis)
+    # ----------------------------
     SYSTEMS = {
         "Convencional": {
             "custo_m2_default": 1200,
@@ -1476,85 +1482,68 @@ def ui_construir():
 
         submitted = st.form_submit_button("✅ Calcular construção", use_container_width=True)
 
-    # ----------------------------
-    # Cálculo (só quando clica)
-    # ----------------------------
-    if submitted:
-        fator = float(SYSTEMS[estrutura]["fator"])
-        custo_construcao_base = float(area_m2) * float(custo_m2) * fator
-
-        iva_pct = 0.06 if iva_reduzido else 0.23
-        iva_construcao = custo_construcao_base * float(iva_pct)
-        imprevistos = custo_construcao_base * (float(imprevistos_pct) / 100.0)
-
-        total_construcao = (
-            float(preco_terreno)
-            + custo_construcao_base
-            + imprevistos
-            + iva_construcao
-            + float(projetos_lic)
-            + float(fiscalizacao)
-        )
-
-        taeg_anual = float(st.session_state.get("taeg_anual", 0.04))
-        prazo_anos = int(st.session_state.get("prazo_anos", 30))
-
-        entrada_build = total_construcao * float(entrada_pct_build)
-        financiado_build = max(0.0, total_construcao - float(entrada_build))
-        prest_build = calc_prestacao(financiado_build, taeg_anual, prazo_anos)
-        mensal_build = float(prest_build) + float(cond_man_build)
-
-        # guardar resultados
-        st.session_state["entrada_build"] = float(entrada_build)
-        st.session_state["mensal_build"] = float(mensal_build)
-
-        # detalhes para manter painel visível
-        st.session_state["total_build"] = float(total_construcao)
-        st.session_state["prest_build"] = float(prest_build)
-        st.session_state["base_build"] = float(custo_construcao_base)
-        st.session_state["iva_build"] = float(iva_construcao)
-        st.session_state["imprevistos_build"] = float(imprevistos)
-
-        # estado UI
-        st.session_state["has_results"] = True
-        st.session_state["active_mode"] = "construir"
-        st.session_state["build_done"] = True
-
-        st.success("Cenário de construção calculado ✅")
-
-    # ----------------------------
-    # Mostrar resultado guardado
-    # ----------------------------
-    if st.session_state.get("build_done"):
-        total_construcao = float(st.session_state.get("total_build", 0.0))
-        entrada_build = float(st.session_state.get("entrada_build", 0.0))
-        prest_build = float(st.session_state.get("prest_build", 0.0))
-        mensal_build = float(st.session_state.get("mensal_build", 0.0))
-        custo_construcao_base = float(st.session_state.get("base_build", 0.0))
-        iva_construcao = float(st.session_state.get("iva_build", 0.0))
-        imprevistos = float(st.session_state.get("imprevistos_build", 0.0))
-
-        st.markdown("<div class='rc-result-box build'>", unsafe_allow_html=True)
-        st.markdown(
-            "<div class='rc-result-title'>Resultado do cenário de construção</div>",
-            unsafe_allow_html=True,
-        )
-
-        colX, colY = st.columns(2)
-
-        with colX:
-            st.metric("Total do projeto (estimado)", euro0(total_construcao))
-            st.caption(
-                f"Base: {euro0(custo_construcao_base)} | IVA: {euro0(iva_construcao)} | Imprevistos: {euro0(imprevistos)}"
-            )
-
-        with colY:
-            st.metric("Entrada necessária", euro0(entrada_build))
-            st.metric("Prestação estimada (crédito)", euro0(prest_build))
-            st.caption(f"Mensal total (com seguros/manut.): {euro0(mensal_build)}")
-
+    if not submitted:
         st.markdown("</div>", unsafe_allow_html=True)
+        return
 
+    # ----------------------------
+    # Cálculo
+    # ----------------------------
+    fator = float(SYSTEMS[estrutura]["fator"])
+    custo_construcao_base = float(area_m2) * float(custo_m2) * fator
+
+    iva_pct = 0.06 if iva_reduzido else 0.23
+    iva_construcao = custo_construcao_base * float(iva_pct)
+    imprevistos = custo_construcao_base * (float(imprevistos_pct) / 100.0)
+
+    total_construcao = (
+        float(preco_terreno)
+        + custo_construcao_base
+        + imprevistos
+        + iva_construcao
+        + float(projetos_lic)
+        + float(fiscalizacao)
+    )
+
+    taeg_anual = float(st.session_state.get("taeg_anual", 0.04))
+    prazo_anos = int(st.session_state.get("prazo_anos", 30))
+
+    entrada_build = total_construcao * float(entrada_pct_build)
+    financiado_build = max(0.0, total_construcao - float(entrada_build))
+    prest_build = calc_prestacao(financiado_build, taeg_anual, prazo_anos)
+    mensal_build = float(prest_build) + float(cond_man_build)
+
+    st.markdown("<div class='rc-result-box build'>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='rc-result-title'>Resultado do cenário de construção</div>",
+        unsafe_allow_html=True,
+    )
+
+    colX, colY = st.columns(2)
+
+    with colX:
+        st.metric("Total do projeto (estimado)", euro0(total_construcao))
+        st.caption(
+            f"Base: {euro0(custo_construcao_base)} | IVA: {euro0(iva_construcao)} | Imprevistos: {euro0(imprevistos)}"
+        )
+
+    with colY:
+        st.metric("Entrada necessária", euro0(entrada_build))
+        st.metric("Prestação estimada (crédito)", euro0(prest_build))
+        st.caption(f"Mensal total (com seguros/manut.): {euro0(mensal_build)}")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # guardar resultados
+    st.session_state["entrada_build"] = float(entrada_build)
+    st.session_state["mensal_build"] = float(mensal_build)
+
+    # estado UI
+    st.session_state["has_results"] = True
+    st.session_state["active_mode"] = "construir"
+    st.session_state["build_done"] = True
+
+    st.success("Cenário de construção calculado ✅")
     st.markdown("</div>", unsafe_allow_html=True)
 
 
