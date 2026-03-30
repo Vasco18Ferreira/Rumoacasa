@@ -899,8 +899,6 @@ div:has(> .rc-sim-card) + div {
   display: none;
 }
 
-div>", unsafe_allow_html=True)
-
 /* ===========================
    RESULTADOS DOS CENÁRIOS
 =========================== */
@@ -1641,6 +1639,7 @@ def ui_resultados_cenarios():
         if build_done:
             total_construcao = float(st.session_state.get("total_build", 0.0))
             entrada_build = float(st.session_state.get("entrada_build", 0.0))
+            prest_build = float(st.session_state.get("prest_build", 0.0))
             mensal_build = float(st.session_state.get("mensal_build", 0.0))
             custo_construcao_base = float(st.session_state.get("base_build", 0.0))
             iva_construcao = float(st.session_state.get("iva_build", 0.0))
@@ -1670,86 +1669,15 @@ def ui_resultados_cenarios():
 
 
 # ================================
-# WOW RESULT
-# ================================
-def ui_wow_result(compra_entrada, compra_mensal, construir_entrada, construir_mensal):
-    try:
-        compra_entrada = float(compra_entrada or 0)
-        compra_mensal = float(compra_mensal or 0)
-        construir_entrada = float(construir_entrada or 0)
-        construir_mensal = float(construir_mensal or 0)
-    except Exception:
-        return
-
-    if compra_mensal <= 0 or construir_mensal <= 0:
-        return
-
-    if compra_mensal < construir_mensal:
-        melhor = "Comprar"
-        diff = construir_mensal - compra_mensal
-        frase = f"Neste cenário, comprar reduz a prestação mensal em cerca de {euro0(diff)}."
-    elif construir_mensal < compra_mensal:
-        melhor = "Construir"
-        diff = compra_mensal - construir_mensal
-        frase = f"Neste cenário, construir reduz a prestação mensal em cerca de {euro0(diff)}."
-    else:
-        melhor = "Empate técnico"
-        diff = 0.0
-        frase = "Neste cenário, a prestação mensal estimada é muito semelhante nas duas opções."
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("#### 🏡 Comprar")
-        st.metric("Entrada estimada", euro0(compra_entrada))
-        st.metric("Mensal total estimada", euro0(compra_mensal))
-
-    with col2:
-        st.markdown("#### 🏗️ Construir")
-        st.metric("Entrada estimada", euro0(construir_entrada))
-        st.metric("Mensal total estimada", euro0(construir_mensal))
-
-    st.markdown(
-        f"""
-<div style="
-    background: linear-gradient(90deg, rgba(34,197,94,0.15), rgba(255,255,255,1));
-    border: 1px solid rgba(34,197,94,0.35);
-    padding: 14px 18px;
-    border-radius: 14px;
-    font-weight: 700;
-    color: #065f46;
-    margin-top: 14px;
-">
-    ✔ Melhor decisão neste cenário: <strong>{melhor}</strong>
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        f"""
-<div style="
-    background: #f1f5f9;
-    border: 1px solid #e5e7eb;
-    padding: 12px 16px;
-    border-radius: 12px;
-    margin-top: 10px;
-    color: #334155;
-">
-    {frase}
-</div>
-""",
-        unsafe_allow_html=True
-    )
-
-
-# ================================
 # Comparar (apenas aquisição)
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
 
-    st.markdown("<h3>🎯 Decisão do cenário</h3>", unsafe_allow_html=True)
+    st.markdown(
+    "<div style='font-size:1.4rem; font-weight:800; margin-bottom:0.5rem;'>🎯 Decisão do cenário</div>",
+    unsafe_allow_html=True
+)
 
     st.caption(
         "💡 No RumoCasa, a comparação prioriza a mensalidade — "
@@ -1790,20 +1718,19 @@ def ui_comparar():
 
     st.info(
         "Já tens uma ideia clara do teu cenário. "
-        "Agora fala com um especialista para validar e avançar com segurança."
+        "Agora valida os números com um especialista e avança com confiança."
     )
 
-    cta_clicked = st.button(
-        "Falar com especialista (gratuito)",
-        use_container_width=True,
-        key="cta_especialista_comparar",
-    )
+cta_clicked = st.button(
+    "Falar com especialista (gratuito)",
+    use_container_width=True,
+    key="cta_especialista_comparar",
+)
 
-    if cta_clicked:
-        st.success("Em breve vais poder falar com um parceiro certificado 👍")
+if cta_clicked:
+    st.success("Em breve vais poder falar com um parceiro certificado 👍")
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
+st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
 # Conforto mensal (guia)
@@ -2207,6 +2134,7 @@ ui_sticky_summary(sticky_placeholder)
 st.markdown("---")
 st.caption(COPY["disclaimer"])
 st.markdown(f"**{COPY['closing']}**")
+
 
 
 
