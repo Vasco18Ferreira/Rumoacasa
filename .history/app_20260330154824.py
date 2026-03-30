@@ -1687,7 +1687,8 @@ def ui_comparar():
 
         st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 
-    
+    st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("### 🚀 Próximo passo")
 
     st.info(
@@ -1695,14 +1696,10 @@ def ui_comparar():
         "Agora fala com um especialista para validar e avançar com segurança."
     )
 
-    if st.button(
-        "👉 Falar com um especialista",
-        use_container_width=True,
-        key="cta_especialista_comparar"
-    ):
+    if st.button("👉 Falar com um especialista", use_container_width=True, key="cta_especialista_comparar"):
         st.success("Em breve vais poder falar com um parceiro certificado 👍")
 
-    st.markdown("</div>", unsafe_allow_html=True)s
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
 # Conforto mensal (guia)
@@ -2088,8 +2085,6 @@ else:
 
 # Resultados fixos dos cenários
 ui_resultados_cenarios()
-
-st.divider()
 
 # Comparação final
 ui_comparar()

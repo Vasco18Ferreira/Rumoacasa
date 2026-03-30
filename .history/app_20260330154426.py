@@ -939,7 +939,7 @@ div:has(> .rc-sim-card) + div {
   font-size: 0.9rem;
   color: #6b7280;
   line-height: 1.55;
-} 
+}
 
 </style>
 """,
@@ -1562,83 +1562,6 @@ def ui_construir():
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-def ui_resultados_cenarios():
-    buy_done = st.session_state.get("buy_done", False)
-    build_done = st.session_state.get("build_done", False)
-
-    if not buy_done and not build_done:
-        return
-
-    st.markdown("<div class='rc-scenarios-wrap'>", unsafe_allow_html=True)
-    st.markdown(
-        "<div class='rc-scenarios-title'>📊 Os teus cenários</div>",
-        unsafe_allow_html=True,
-    )
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if buy_done:
-            upfront_buy = float(st.session_state.get("upfront_buy", 0.0))
-            prestacao = float(st.session_state.get("prestacao_buy", 0.0))
-            mensal_compra = float(st.session_state.get("mensal_compra", 0.0))
-            imt = float(st.session_state.get("imt_2025", 0.0))
-            selo = float(st.session_state.get("selo_buy", 0.0))
-            escritura_regs = float(st.session_state.get("escritura_buy", 0.0))
-            custos_extra = float(st.session_state.get("extras_buy", 0.0))
-
-            st.markdown("<div class='rc-scenario-card buy'>", unsafe_allow_html=True)
-            st.markdown(
-                "<div class='rc-scenario-badge buy'>💸 Compra</div>",
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                "<div class='rc-scenario-title'>Cenário de compra</div>",
-                unsafe_allow_html=True,
-            )
-
-            st.metric("Entrada necessária", euro0(upfront_buy))
-            st.metric("Prestação (crédito)", euro0(prestacao))
-            st.metric("Mensal total", euro0(mensal_compra))
-
-            st.markdown(
-                f"<div class='rc-scenario-note'>IMT: {euro0(imt)} · Selo: {euro0(selo)} · Escritura/registos: {euro0(escritura_regs)} · Extras: {euro0(custos_extra)}</div>",
-                unsafe_allow_html=True,
-            )
-            st.markdown("</div>", unsafe_allow_html=True)
-
-    with col2:
-        if build_done:
-            total_construcao = float(st.session_state.get("total_build", 0.0))
-            entrada_build = float(st.session_state.get("entrada_build", 0.0))
-            prest_build = float(st.session_state.get("prest_build", 0.0))
-            mensal_build = float(st.session_state.get("mensal_build", 0.0))
-            custo_construcao_base = float(st.session_state.get("base_build", 0.0))
-            iva_construcao = float(st.session_state.get("iva_build", 0.0))
-            imprevistos = float(st.session_state.get("imprevistos_build", 0.0))
-
-            st.markdown("<div class='rc-scenario-card build'>", unsafe_allow_html=True)
-            st.markdown(
-                "<div class='rc-scenario-badge build'>🏗️ Construção</div>",
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                "<div class='rc-scenario-title'>Cenário de construção</div>",
-                unsafe_allow_html=True,
-            )
-
-            st.metric("Total do projeto", euro0(total_construcao))
-            st.metric("Entrada necessária", euro0(entrada_build))
-            st.metric("Prestação estimada", euro0(prest_build))
-
-            st.markdown(
-                f"<div class='rc-scenario-note'>Base: {euro0(custo_construcao_base)} · IVA: {euro0(iva_construcao)} · Imprevistos: {euro0(imprevistos)} · Mensal total: {euro0(mensal_build)}</div>",
-                unsafe_allow_html=True,
-            )
-            st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
 
 # ================================
 # Comparar (apenas aquisição)
@@ -1687,7 +1610,8 @@ def ui_comparar():
 
         st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 
-    
+    st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("### 🚀 Próximo passo")
 
     st.info(
@@ -1695,14 +1619,10 @@ def ui_comparar():
         "Agora fala com um especialista para validar e avançar com segurança."
     )
 
-    if st.button(
-        "👉 Falar com um especialista",
-        use_container_width=True,
-        key="cta_especialista_comparar"
-    ):
+    if st.button("👉 Falar com um especialista", use_container_width=True, key="cta_especialista_comparar"):
         st.success("Em breve vais poder falar com um parceiro certificado 👍")
 
-    st.markdown("</div>", unsafe_allow_html=True)s
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
 # Conforto mensal (guia)
@@ -2088,8 +2008,6 @@ else:
 
 # Resultados fixos dos cenários
 ui_resultados_cenarios()
-
-st.divider()
 
 # Comparação final
 ui_comparar()

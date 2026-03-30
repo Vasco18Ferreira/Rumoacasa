@@ -1687,7 +1687,6 @@ def ui_comparar():
 
         st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 
-    
     st.markdown("### 🚀 Próximo passo")
 
     st.info(
@@ -1702,7 +1701,7 @@ def ui_comparar():
     ):
         st.success("Em breve vais poder falar com um parceiro certificado 👍")
 
-    st.markdown("</div>", unsafe_allow_html=True)s
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
 # Conforto mensal (guia)
@@ -2088,8 +2087,6 @@ else:
 
 # Resultados fixos dos cenários
 ui_resultados_cenarios()
-
-st.divider()
 
 # Comparação final
 ui_comparar()

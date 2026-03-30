@@ -871,76 +871,6 @@ div:has(> .rc-sim-card) + div {
   display: none;
 }
 
-/* ===========================
-   RESULTADOS DOS CENÁRIOS
-=========================== */
-
-.rc-scenarios-wrap{
-  margin: 1.2rem 0 1.4rem 0;
-}
-
-.rc-scenarios-title{
-  font-size: 1.25rem;
-  font-weight: 850;
-  color: #111827;
-  margin-bottom: 0.85rem;
-}
-
-.rc-scenario-card{
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
-  padding: 1rem 1rem 0.9rem 1rem;
-  box-shadow: 0 14px 30px rgba(15,23,42,0.05);
-  height: 100%;
-}
-
-.rc-scenario-card.buy{
-  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
-  border: 1px solid rgba(37,99,235,0.18);
-}
-
-.rc-scenario-card.build{
-  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
-  border: 1px solid rgba(34,197,94,0.20);
-}
-
-.rc-scenario-badge{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.76rem;
-  font-weight: 800;
-  padding: 5px 12px;
-  border-radius: 999px;
-  margin-bottom: 0.65rem;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.05);
-}
-
-.rc-scenario-badge.buy{
-  background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(37,99,235,0.05));
-  color: #1d4ed8;
-}
-
-.rc-scenario-badge.build{
-  background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05));
-  color: #166534;
-}
-
-.rc-scenario-title{
-  font-size: 1.05rem;
-  font-weight: 850;
-  color: #111827;
-  margin-bottom: 0.85rem;
-}
-
-.rc-scenario-note{
-  margin-top: 0.75rem;
-  font-size: 0.9rem;
-  color: #6b7280;
-  line-height: 1.55;
-} 
-
 </style>
 """,
     unsafe_allow_html=True,
@@ -1263,6 +1193,7 @@ def ui_comprar():
 
         st.success("Cenário de compra calculado ✅")
 
+
     st.markdown("</div>", unsafe_allow_html=True)
 
 
@@ -1562,83 +1493,72 @@ def ui_construir():
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-def ui_resultados_cenarios():
-    buy_done = st.session_state.get("buy_done", False)
-    build_done = st.session_state.get("build_done", False)
 
-    if not buy_done and not build_done:
-        return
-
-    st.markdown("<div class='rc-scenarios-wrap'>", unsafe_allow_html=True)
+# ================================
+# Secção ARRENDAR
+# ================================
+def ui_arrendar():
+    st.markdown(f"### {COPY['rent_title']}")
     st.markdown(
-        "<div class='rc-scenarios-title'>📊 Os teus cenários</div>",
-        unsafe_allow_html=True,
-    )
+    f"<p style='color: var(--rc-gray-900); font-size: 0.95rem; line-height: 1.5; margin-top: -6px;'>"
+    f"{COPY['rent_body']}</p>",
+    unsafe_allow_html=True
+)
 
-    col1, col2 = st.columns(2)
+    colL, colR = st.columns(2)
+    with colL:
+        renda = st.number_input("Renda (€/mês)", value=float(ss_get(K("arrendar", "renda"), 900.0)), step=10.0, min_value=0.0, key=K("arrendar", "renda_input"))
+    with colR:
+        inflacao_renda = st.number_input("Inflação anual da renda (%)", value=float(ss_get(K("arrendar", "infl_renda"), 3.0)), step=0.5, min_value=0.0, key=K("arrendar", "inflacao_input")) / 100.0
 
-    with col1:
-        if buy_done:
-            upfront_buy = float(st.session_state.get("upfront_buy", 0.0))
-            prestacao = float(st.session_state.get("prestacao_buy", 0.0))
-            mensal_compra = float(st.session_state.get("mensal_compra", 0.0))
-            imt = float(st.session_state.get("imt_2025", 0.0))
-            selo = float(st.session_state.get("selo_buy", 0.0))
-            escritura_regs = float(st.session_state.get("escritura_buy", 0.0))
-            custos_extra = float(st.session_state.get("extras_buy", 0.0))
+    st.session_state["renda"] = float(renda)
+    st.session_state["inflacao_renda"] = float(inflacao_renda)
 
-            st.markdown("<div class='rc-scenario-card buy'>", unsafe_allow_html=True)
-            st.markdown(
-                "<div class='rc-scenario-badge buy'>💸 Compra</div>",
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                "<div class='rc-scenario-title'>Cenário de compra</div>",
-                unsafe_allow_html=True,
-            )
-
-            st.metric("Entrada necessária", euro0(upfront_buy))
-            st.metric("Prestação (crédito)", euro0(prestacao))
-            st.metric("Mensal total", euro0(mensal_compra))
-
-            st.markdown(
-                f"<div class='rc-scenario-note'>IMT: {euro0(imt)} · Selo: {euro0(selo)} · Escritura/registos: {euro0(escritura_regs)} · Extras: {euro0(custos_extra)}</div>",
-                unsafe_allow_html=True,
-            )
-            st.markdown("</div>", unsafe_allow_html=True)
-
-    with col2:
-        if build_done:
-            total_construcao = float(st.session_state.get("total_build", 0.0))
-            entrada_build = float(st.session_state.get("entrada_build", 0.0))
-            prest_build = float(st.session_state.get("prest_build", 0.0))
-            mensal_build = float(st.session_state.get("mensal_build", 0.0))
-            custo_construcao_base = float(st.session_state.get("base_build", 0.0))
-            iva_construcao = float(st.session_state.get("iva_build", 0.0))
-            imprevistos = float(st.session_state.get("imprevistos_build", 0.0))
-
-            st.markdown("<div class='rc-scenario-card build'>", unsafe_allow_html=True)
-            st.markdown(
-                "<div class='rc-scenario-badge build'>🏗️ Construção</div>",
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                "<div class='rc-scenario-title'>Cenário de construção</div>",
-                unsafe_allow_html=True,
-            )
-
-            st.metric("Total do projeto", euro0(total_construcao))
-            st.metric("Entrada necessária", euro0(entrada_build))
-            st.metric("Prestação estimada", euro0(prest_build))
-
-            st.markdown(
-                f"<div class='rc-scenario-note'>Base: {euro0(custo_construcao_base)} · IVA: {euro0(iva_construcao)} · Imprevistos: {euro0(imprevistos)} · Mensal total: {euro0(mensal_build)}</div>",
-                unsafe_allow_html=True,
-            )
-            st.markdown("</div>", unsafe_allow_html=True)
-
+    st.caption("📌 No RumoCasa, arrendar não compete com comprar/construir — entra como fase de preparação e flexibilidade.")
     st.markdown("</div>", unsafe_allow_html=True)
 
+# ================================
+# Arrendar como fase estratégica (copy premium)
+# ================================
+import textwrap
+
+def ui_arrendar_estrategia():
+    renda = float(st.session_state.get("renda", 0.0))
+    poup_mensal = float(st.session_state.get("poupanca_mensal", 0.0))
+    anos = int(st.session_state.get("anos_meta", 3))
+    saldo_final = st.session_state.get("saldo_final_estimado", None)
+
+    if renda <= 0 or poup_mensal <= 0:
+        return
+
+    if saldo_final is None:
+        saldo_final = poup_mensal * anos * 12
+
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.markdown("<h3>🧭 Arrendar como fase estratégica</h3>", unsafe_allow_html=True)
+
+    html = f"""
+<p style="margin:.65rem 0 .35rem 0; font-weight:600; color: var(--rc-gray-900);">
+  Arrendar é uma fase estratégica — não um erro.
+</p>
+
+<p style="margin:.15rem 0 .65rem 0; color: var(--rc-gray-800);">
+  <b>Arrendar não entra no “mais vantajoso”</b> porque não é aquisição.
+  O que interessa aqui é: <b>quanto consegues preparar para a entrada</b> enquanto manténs flexibilidade.
+</p>
+
+<p style="margin:.65rem 0 .35rem 0; color: var(--rc-gray-800);">
+  <span style="font-weight:700;">Cenário:</span>
+  renda <b>{euro0(renda)}/mês</b> + poupança <b>{euro0(poup_mensal)}/mês</b> durante <b>{anos} anos</b>
+  → podes acumular cerca de <b>{euro0(saldo_final)}</b> para a entrada.
+</p>
+
+<p style="margin:.35rem 0 0 0; color: #6B7280; font-size: 0.92rem;">
+  Nota: ajusta a poupança mensal à tua realidade. O objetivo é transformar “arrendar” num plano com direção.
+</p>
+"""
+    st.markdown(textwrap.dedent(html), unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
 # Comparar (apenas aquisição)
@@ -1687,7 +1607,8 @@ def ui_comparar():
 
         st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 
-    
+    st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("### 🚀 Próximo passo")
 
     st.info(
@@ -1695,14 +1616,10 @@ def ui_comparar():
         "Agora fala com um especialista para validar e avançar com segurança."
     )
 
-    if st.button(
-        "👉 Falar com um especialista",
-        use_container_width=True,
-        key="cta_especialista_comparar"
-    ):
+    if st.button("👉 Falar com um especialista", use_container_width=True, key="cta_especialista_comparar"):
         st.success("Em breve vais poder falar com um parceiro certificado 👍")
 
-    st.markdown("</div>", unsafe_allow_html=True)s
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
 # Conforto mensal (guia)
@@ -2086,18 +2003,17 @@ else:
     with tab_const:
         ui_construir()
 
-# Resultados fixos dos cenários
+ui_arrendar()
+ui_arrendar_estrategia()
+
 ui_resultados_cenarios()
 
-st.divider()
-
-# Comparação final
 ui_comparar()
 
 ui_conforto_mensal()   # 🧠 decisão emocional / vida real
 ui_sensibilidade()     # 📉 risco financeiro
 
-ui_poupanca()          # 🎯 plano de ação
+ui_poupanca()         # 🎯 plano de ação
 ui_leads()
 ui_parceiros()
 
