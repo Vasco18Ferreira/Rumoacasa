@@ -971,48 +971,6 @@ div>", unsafe_allow_html=True)
   line-height: 1.55;
 } 
 
-/* Ocultar menu e footer padrão do Streamlit */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-
-/* Ocultar toolbar / deploy controls */
-[data-testid="stToolbar"] {
-  display: none !important;
-}
-
-[data-testid="stDecoration"] {
-  display: none !important;
-}
-
-[data-testid="stStatusWidget"] {
-  display: none !important;
-}
-
-[data-testid="stHeader"] {
-  display: none !important;
-}
-
-/* Reduzir espaço vazio do topo depois de esconder header */
-.block-container {
-  padding-top: 1.2rem !important;
-}
-
-/* Tentativas extra para botões flutuantes / overlays */
-div[title="Fork"],
-a[title="Fork"],
-iframe,
-button[title="Fork"] {
-  display: none !important;
-}
-
-/* esconder botões fixos em cantos */
-.fixed,
-.st-emotion-cache-1dp5vir,
-.st-emotion-cache-zq5wmm {
-  display: none !important;
-}
-
 </style>
 """,
     unsafe_allow_html=True,

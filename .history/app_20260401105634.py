@@ -998,21 +998,6 @@ header {visibility: hidden;}
   padding-top: 1.2rem !important;
 }
 
-/* Tentativas extra para botões flutuantes / overlays */
-div[title="Fork"],
-a[title="Fork"],
-iframe,
-button[title="Fork"] {
-  display: none !important;
-}
-
-/* esconder botões fixos em cantos */
-.fixed,
-.st-emotion-cache-1dp5vir,
-.st-emotion-cache-zq5wmm {
-  display: none !important;
-}
-
 </style>
 """,
     unsafe_allow_html=True,
