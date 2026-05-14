@@ -2463,28 +2463,19 @@ def ui_parceiros():
 # -------------------------------------------------
 if modo_ui == COPY["layout_opt_cols"]:
     col_comp, col_constr = st.columns(2)
-
     with col_comp:
         ui_comprar()
-
     with col_constr:
         ui_construir()
-
 else:
     tab_comp, tab_const = st.tabs(["🏠 Comprar", "🏗️ Construir"])
-
     with tab_comp:
         ui_comprar()
-
     with tab_const:
         ui_construir()
 
-
 # Resultados fixos dos cenários
 ui_resultados_cenarios()
-
-# Side note / explicação IMT Jovem
-ui_side_note_jovens()
 
 st.divider()
 

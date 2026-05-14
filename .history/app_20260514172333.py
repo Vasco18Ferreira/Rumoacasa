@@ -1264,6 +1264,9 @@ def ui_comprar():
         unsafe_allow_html=True,
     )
 
+    # ----------------------------
+    # FORM (inputs)
+    # ----------------------------
     with st.form("form_comprar", clear_on_submit=False):
         colL, colR = st.columns(2)
 
@@ -1285,28 +1288,6 @@ def ui_comprar():
                 help=TIPS["tipo_imovel"],
                 key=K("comprar", "tipo_imovel"),
                 index=0,
-            )
-
-            beneficio_jovem = st.checkbox(
-                "Tenho até 35 anos e cumpro os requisitos do IMT Jovem",
-                value=False,
-                help=(
-                    "Regime para jovens até 35 anos na compra da primeira habitação própria permanente. "
-                    "Não deve ser usado para casa secundária, investimento ou terreno/construção."
-                ),
-                key=K("comprar", "beneficio_jovem"),
-            )
-
-        if beneficio_jovem:
-            st.markdown(
-                """
-                <div class="rc-imt-note">
-                💡 <strong>IMT Jovem explicado simples:</strong><br>
-                Se tens até 35 anos, não és dependente no IRS, não tens/tiveste casa em teu nome nos últimos 3 anos
-                e estás a comprar a tua primeira habitação própria permanente, podes pagar menos IMT e Imposto do Selo.
-                </div>
-                """,
-                unsafe_allow_html=True,
             )
 
         colA, colB, colC = st.columns(3)
@@ -1396,28 +1377,13 @@ def ui_comprar():
 
         submitted = st.form_submit_button("✅ Calcular compra", use_container_width=True)
 
+    # ----------------------------
+    # CÁLCULOS (só quando clica)
+    # ----------------------------
     if submitted:
         is_hpp = tipo_imovel == "Habitação Própria Permanente"
-
-        imt_original = calc_imt_2025(preco_casa, hab_pp=is_hpp)
-        selo_original = 0.008 * float(preco_casa)
-
-        limite_imt_jovem_total = 330_539
-        jovem_aplicavel = (
-            bool(beneficio_jovem)
-            and is_hpp
-            and float(preco_casa) <= limite_imt_jovem_total
-        )
-
-        if jovem_aplicavel:
-            imt = 0.0
-            selo = 0.0
-        else:
-            imt = imt_original
-            selo = selo_original
-
-        poupanca_jovem = (imt_original - imt) + (selo_original - selo)
-
+        imt = calc_imt_2025(preco_casa, hab_pp=is_hpp)
+        selo = 0.008 * float(preco_casa)
         escritura_regs = 1000.0
 
         custos_extra = float(custo_avaliacao) + float(obras_mob) + float(outros_extra)
@@ -1431,52 +1397,30 @@ def ui_comprar():
         upfront_buy = float(entrada) + float(custos_compra)
 
         # Guardar resultados
-        st.session_state["preco_buy"] = float(preco_casa)
-        st.session_state["tipo_imovel_buy"] = tipo_imovel
-
         st.session_state["upfront_buy"] = float(upfront_buy)
         st.session_state["mensal_compra"] = float(mensal_compra)
         st.session_state["financiado"] = float(financiado)
         st.session_state["imt_2025"] = float(imt)
 
-        # Detalhes
-        st.session_state["imt_original_buy"] = float(imt_original)
-        st.session_state["selo_original_buy"] = float(selo_original)
+        # detalhes para manter painel visível
         st.session_state["selo_buy"] = float(selo)
         st.session_state["escritura_buy"] = float(escritura_regs)
         st.session_state["extras_buy"] = float(custos_extra)
         st.session_state["prestacao_buy"] = float(prestacao)
 
-        # IMT Jovem
-        st.session_state["beneficio_jovem_buy"] = bool(beneficio_jovem)
-        st.session_state["jovem_aplicavel_buy"] = bool(jovem_aplicavel)
-        st.session_state["poupanca_jovem_buy"] = float(poupanca_jovem)
-
-        # Base para construir
+        # base para construir
         st.session_state["taeg_anual"] = float(taeg_anual)
         st.session_state["prazo_anos"] = int(prazo_anos)
 
-        # Estado UI
+        # estado UI
         st.session_state["has_results"] = True
         st.session_state["active_mode"] = "comprar"
         st.session_state["buy_done"] = True
 
-        if jovem_aplicavel:
-            st.success(
-                f"Cenário de compra calculado ✅ Benefício jovem aplicado: poupança estimada de {euro0(poupanca_jovem)}."
-            )
-        elif beneficio_jovem and not is_hpp:
-            st.warning(
-                "Cenário calculado ✅ O benefício jovem não foi aplicado porque o imóvel não está marcado como Habitação Própria Permanente."
-            )
-        elif beneficio_jovem and float(preco_casa) > limite_imt_jovem_total:
-            st.warning(
-                "Cenário calculado ✅ O benefício jovem pode não ser total porque o valor do imóvel ultrapassa o limite de isenção total usado neste MVP."
-            )
-        else:
-            st.success("Cenário de compra calculado ✅")
+        st.success("Cenário de compra calculado ✅")
 
     st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ================================
 # Secção CONSTRUIR (v3) — dinâmico + sem URL
@@ -1926,111 +1870,6 @@ def ui_wow_result(compra_entrada, compra_mensal, construir_entrada, construir_me
 
 
 # ================================
-# Side note: jovens até 35 anos
-# ================================
-def ui_side_note_jovens():
-    buy_done = st.session_state.get("buy_done", False)
-    build_done = st.session_state.get("build_done", False)
-
-    if not buy_done and not build_done:
-        return
-
-    imt = float(st.session_state.get("imt_2025", 0.0))
-    selo = float(st.session_state.get("selo_buy", 0.0))
-    poupanca_potencial = imt + selo
-
-    st.markdown("<div class='rc-young-side'>", unsafe_allow_html=True)
-
-    st.markdown(
-        "<div class='rc-young-side-title'>🧒 Jovens até 35 anos: o que pode mudar?</div>",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        <div class='rc-young-side-sub'>
-        Esta é uma das partes mais importantes para quem está a comprar a primeira casa.
-        Há apoios que podem reduzir o dinheiro necessário à cabeça ou facilitar o crédito.
-        Explicado de forma simples:
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown(
-            f"""
-            <div class="rc-young-box">
-              <h4>1️⃣ Isenção de IMT + Imposto do Selo</h4>
-              <ul>
-                <li>É para jovens até 35 anos.</li>
-                <li>Aplica-se à compra da primeira habitação própria permanente.</li>
-                <li>Na prática, pode reduzir muito os impostos pagos na escritura.</li>
-                <li>No teu cenário de compra, a poupança potencial pode chegar a <b>{euro0(poupanca_potencial)}</b>.</li>
-              </ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with col2:
-        st.markdown(
-            """
-            <div class="rc-young-box">
-              <h4>2️⃣ Garantia Pública no crédito</h4>
-              <ul>
-                <li>É para jovens entre 18 e 35 anos.</li>
-                <li>Pode ajudar o banco a financiar uma parte maior do imóvel.</li>
-                <li>Está ligada à primeira habitação própria permanente.</li>
-                <li>Tem limites de rendimento, valor do imóvel e outras condições.</li>
-              </ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    st.markdown(
-        """
-        <div class="rc-young-simple">
-          <b>Explicado como se fosse simples:</b><br>
-          A isenção de IMT/Selo ajuda a pagar menos impostos no momento da compra.
-          A Garantia Pública pode ajudar quando tens pouca entrada disponível.
-          Uma reduz custos. A outra pode facilitar o acesso ao crédito.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    if build_done:
-        st.markdown(
-            """
-            <div class="rc-young-warning">
-              ⚠️ <b>E se for construção?</b><br>
-              Aqui é preciso cuidado: a isenção jovem de IMT/Imposto do Selo está pensada para a
-              <b>compra</b> da primeira habitação própria permanente. Comprar terreno e construir
-              casa própria pode não ter o mesmo enquadramento. Antes de decidir, confirma sempre
-              com Finanças, notário, banco ou intermediário de crédito.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    st.markdown(
-        """
-        <div class="rc-young-simple">
-          📌 <b>Nota importante:</b> esta informação é educativa e simplificada. As regras podem
-          depender da idade, tipo de imóvel, valor da compra, situação fiscal e finalidade da casa.
-          O RumoCasa não substitui aconselhamento fiscal, jurídico ou financeiro.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# ================================
 # Comparar (apenas aquisição)
 # ================================
 def ui_comparar():
@@ -2463,28 +2302,19 @@ def ui_parceiros():
 # -------------------------------------------------
 if modo_ui == COPY["layout_opt_cols"]:
     col_comp, col_constr = st.columns(2)
-
     with col_comp:
         ui_comprar()
-
     with col_constr:
         ui_construir()
-
 else:
     tab_comp, tab_const = st.tabs(["🏠 Comprar", "🏗️ Construir"])
-
     with tab_comp:
         ui_comprar()
-
     with tab_const:
         ui_construir()
 
-
 # Resultados fixos dos cenários
 ui_resultados_cenarios()
-
-# Side note / explicação IMT Jovem
-ui_side_note_jovens()
 
 st.divider()
 
