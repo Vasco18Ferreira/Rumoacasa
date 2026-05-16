@@ -1612,25 +1612,6 @@ def ui_construir():
         },
     }
 
-    ACABAMENTOS = {
-    "Base / estrutura": {
-        "fator": 0.85,
-        "descricao": "Inclui normalmente estrutura, paredes, cobertura e base técnica. Pode não incluir cozinha, roupeiros, eletrodomésticos, climatização ou exteriores.",
-    },
-    "Chave na mão — Essencial": {
-        "fator": 1.00,
-        "descricao": "Inclui normalmente acabamentos standard, WC completos, pavimentos, portas, pintura e cozinha básica. Varia muito por empresa.",
-    },
-    "Chave na mão — Conforto": {
-        "fator": 1.12,
-        "descricao": "Inclui normalmente melhores acabamentos, cozinha mais equipada, roupeiros, climatização base e materiais de gama média.",
-    },
-    "Premium / eficiência": {
-        "fator": 1.25,
-        "descricao": "Inclui normalmente materiais superiores, cozinha equipada, soluções de eficiência energética, climatização melhorada e maior detalhe técnico.",
-    },
-}
-
     # ----------------------------
     # 1) Escolha do sistema FORA do form
     # ----------------------------
@@ -1683,7 +1664,7 @@ def ui_construir():
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
-        # ----------------------------
+    # ----------------------------
     # 2) FORM: inputs
     # ----------------------------
     with st.form("form_construir", clear_on_submit=False):
@@ -1718,16 +1699,6 @@ def ui_construir():
                 help=TIPS["custo_m2"],
                 key=K("construir", "custo_m2_input"),
             )
-
-        acabamento = st.selectbox(
-            "Nível de acabamento / entrega",
-            list(ACABAMENTOS.keys()),
-            index=1,
-            help="Define o que a construção pode incluir. O valor final muda muito conforme a empresa, materiais e nível de entrega.",
-            key=K("construir", "acabamento"),
-        )
-
-        st.info(ACABAMENTOS[acabamento]["descricao"])
 
         col1, col2, col3 = st.columns(3)
 
@@ -1813,15 +1784,8 @@ def ui_construir():
     # Cálculo (só quando clica)
     # ----------------------------
     if submitted:
-        fator_sistema = float(SYSTEMS[estrutura]["fator"])
-        fator_acabamento = float(ACABAMENTOS[acabamento]["fator"])
-
-        custo_construcao_base = (
-            float(area_m2)
-            * float(custo_m2)
-            * fator_sistema
-            * fator_acabamento
-        )
+        fator = float(SYSTEMS[estrutura]["fator"])
+        custo_construcao_base = float(area_m2) * float(custo_m2) * fator
 
         iva_pct = 0.06 if iva_reduzido else 0.23
         iva_construcao = custo_construcao_base * float(iva_pct)
@@ -1844,20 +1808,24 @@ def ui_construir():
         prest_build = calc_prestacao(financiado_build, taeg_anual, prazo_anos)
         mensal_build = float(prest_build) + float(cond_man_build)
 
+        # guardar resultados
         st.session_state["entrada_build"] = float(entrada_build)
         st.session_state["mensal_build"] = float(mensal_build)
 
+        # detalhes para manter painel visível
         st.session_state["total_build"] = float(total_construcao)
         st.session_state["prest_build"] = float(prest_build)
         st.session_state["base_build"] = float(custo_construcao_base)
         st.session_state["iva_build"] = float(iva_construcao)
         st.session_state["imprevistos_build"] = float(imprevistos)
 
+        # estado UI
         st.session_state["has_results"] = True
         st.session_state["active_mode"] = "construir"
         st.session_state["build_done"] = True
 
         st.success("Cenário de construção calculado ✅")
+
 
     st.markdown("</div>", unsafe_allow_html=True)
 
