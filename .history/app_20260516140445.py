@@ -140,8 +140,6 @@ TIPS = {
 
 SHOW_PARTNERS = False
 
-SHOW_LEADS = False
-
 st.set_page_config(
     page_title=COPY["app_title"],
     page_icon="🏡",
