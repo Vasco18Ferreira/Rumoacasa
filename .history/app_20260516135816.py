@@ -2572,8 +2572,7 @@ ui_conforto_mensal()   # 🧠 decisão emocional / vida real
 ui_sensibilidade()     # 📉 risco financeiro
 
 ui_poupanca()          # 🎯 plano de ação
-if SHOW_LEADS:
-    ui_leads()
+ui_leads()
 
 if SHOW_PARTNERS:
     ui_parceiros()
