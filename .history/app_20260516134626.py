@@ -2151,23 +2151,23 @@ def ui_comparar():
             "Completa **Comprar** para comparar lado a lado."
         )
 
-# st.markdown("### 🚀 Próximo passo")
+    st.markdown("### 🚀 Próximo passo")
 
-# st.info(
-#     "Já tens uma ideia clara do teu cenário. "
-#     "Agora fala com um especialista para validar e avançar com segurança."
-# )
+    st.info(
+        "Já tens uma ideia clara do teu cenário. "
+        "Agora fala com um especialista para validar e avançar com segurança."
+    )
 
-# cta_clicked = st.button(
-#     "Falar com especialista (gratuito)",
-#     use_container_width=True,
-#     key="cta_especialista_comparar",
-# )
+    cta_clicked = st.button(
+        "Falar com especialista (gratuito)",
+        use_container_width=True,
+        key="cta_especialista_comparar",
+    )
 
-# if cta_clicked:
-#     st.success("Em breve vais poder falar com um parceiro certificado 👍")
+    if cta_clicked:
+        st.success("Em breve vais poder falar com um parceiro certificado 👍")
 
-st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
 # Conforto mensal (guia)
