@@ -965,20 +965,6 @@ html, body, .stApp {
   line-height: 1.55;
 } 
 
-.rc-scenario-metric-label{
-  font-size: 0.86rem;
-  color: #374151;
-  margin-top: 0.85rem;
-  margin-bottom: 0.2rem;
-}
-
-.rc-scenario-metric-value{
-  font-size: 2rem;
-  line-height: 1.15;
-  font-weight: 500;
-  color: #111827;
-}
-
 /* Ocultar menu e footer padrão do Streamlit */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
@@ -1831,7 +1817,11 @@ def ui_resultados_cenarios():
     if not buy_done and not build_done:
         return
 
-    st.markdown("<div class='rc-scenarios-title'>📊 Os teus cenários</div>", unsafe_allow_html=True)
+    st.markdown("<div class='rc-scenarios-wrap'>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='rc-scenarios-title'>📊 Os teus cenários</div>",
+        unsafe_allow_html=True,
+    )
 
     col1, col2 = st.columns(2)
 
@@ -1845,28 +1835,25 @@ def ui_resultados_cenarios():
             escritura_regs = float(st.session_state.get("escritura_buy", 0.0))
             custos_extra = float(st.session_state.get("extras_buy", 0.0))
 
+            st.markdown("<div class='rc-scenario-card buy'>", unsafe_allow_html=True)
             st.markdown(
-                f"""
-                <div class='rc-scenario-card buy'>
-                    <div class='rc-scenario-badge buy'>💸 Compra</div>
-                    <div class='rc-scenario-title'>Cenário de compra</div>
-
-                    <div class='rc-scenario-metric-label'>Entrada necessária</div>
-                    <div class='rc-scenario-metric-value'>{euro0(upfront_buy)}</div>
-
-                    <div class='rc-scenario-metric-label'>Prestação (crédito)</div>
-                    <div class='rc-scenario-metric-value'>{euro0(prestacao)}</div>
-
-                    <div class='rc-scenario-metric-label'>Mensal total</div>
-                    <div class='rc-scenario-metric-value'>{euro0(mensal_compra)}</div>
-
-                    <div class='rc-scenario-note'>
-                        IMT: {euro0(imt)} · Selo: {euro0(selo)} · Escritura/registos: {euro0(escritura_regs)} · Extras: {euro0(custos_extra)}
-                    </div>
-                </div>
-                """,
+                "<div class='rc-scenario-badge buy'>💸 Compra</div>",
                 unsafe_allow_html=True,
             )
+            st.markdown(
+                "<div class='rc-scenario-title'>Cenário de compra</div>",
+                unsafe_allow_html=True,
+            )
+
+            st.metric("Entrada necessária", euro0(upfront_buy))
+            st.metric("Prestação (crédito)", euro0(prestacao))
+            st.metric("Mensal total", euro0(mensal_compra))
+
+            st.markdown(
+                f"<div class='rc-scenario-note'>IMT: {euro0(imt)} · Selo: {euro0(selo)} · Escritura/registos: {euro0(escritura_regs)} · Extras: {euro0(custos_extra)}</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown("</div>", unsafe_allow_html=True)
 
     with col2:
         if build_done:
@@ -1877,28 +1864,29 @@ def ui_resultados_cenarios():
             iva_construcao = float(st.session_state.get("iva_build", 0.0))
             imprevistos = float(st.session_state.get("imprevistos_build", 0.0))
 
+            st.markdown("<div class='rc-scenario-card build'>", unsafe_allow_html=True)
             st.markdown(
-                f"""
-                <div class='rc-scenario-card build'>
-                    <div class='rc-scenario-badge build'>🏗️ Construção</div>
-                    <div class='rc-scenario-title'>Cenário de construção</div>
-
-                    <div class='rc-scenario-metric-label'>Total do projeto</div>
-                    <div class='rc-scenario-metric-value'>{euro0(total_construcao)}</div>
-
-                    <div class='rc-scenario-metric-label'>Entrada necessária</div>
-                    <div class='rc-scenario-metric-value'>{euro0(entrada_build)}</div>
-
-                    <div class='rc-scenario-metric-label'>Mensal total</div>
-                    <div class='rc-scenario-metric-value'>{euro0(mensal_build)}</div>
-
-                    <div class='rc-scenario-note'>
-                        Base: {euro0(custo_construcao_base)} · IVA: {euro0(iva_construcao)} · Imprevistos: {euro0(imprevistos)} · Mensal total: {euro0(mensal_build)}
-                    </div>
-                </div>
-                """,
+                "<div class='rc-scenario-badge build'>🏗️ Construção</div>",
                 unsafe_allow_html=True,
             )
+            st.markdown(
+                "<div class='rc-scenario-title'>Cenário de construção</div>",
+                unsafe_allow_html=True,
+            )
+
+            st.metric("Total do projeto", euro0(total_construcao))
+            st.metric("Entrada necessária", euro0(entrada_build))
+            st.metric("Mensal total", euro0(mensal_build))
+
+            st.markdown(
+                f"<div class='rc-scenario-note'>Base: {euro0(custo_construcao_base)} · IVA: {euro0(iva_construcao)} · Imprevistos: {euro0(imprevistos)} · Mensal total: {euro0(mensal_build)}</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
 # ================================
 # WOW RESULT
 # ================================

@@ -965,20 +965,6 @@ html, body, .stApp {
   line-height: 1.55;
 } 
 
-.rc-scenario-metric-label{
-  font-size: 0.86rem;
-  color: #374151;
-  margin-top: 0.85rem;
-  margin-bottom: 0.2rem;
-}
-
-.rc-scenario-metric-value{
-  font-size: 2rem;
-  line-height: 1.15;
-  font-weight: 500;
-  color: #111827;
-}
-
 /* Ocultar menu e footer padrão do Streamlit */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
