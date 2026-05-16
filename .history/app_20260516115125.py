@@ -895,6 +895,12 @@ html, body, .stApp {
    FIX: remover barras estranhas
 =========================== */
 
+div:has(> .rc-sim-card) + div {
+  display: none;
+}
+
+div>", unsafe_allow_html=True)
+
 /* ===========================
    RESULTADOS DOS CENÁRIOS
 =========================== */
@@ -1089,48 +1095,6 @@ button[title="Fork"] {
   .rc-young-grid{
     grid-template-columns: 1fr;
   }
-}
-
-/* ===========================
-   ESPAÇAMENTO MAIS COMPACTO
-=========================== */
-
-.main .block-container {
-    padding-top: 1rem !important;
-    padding-bottom: 1.5rem !important;
-}
-
-.section-card {
-    padding: 1.1rem 1.3rem !important;
-    margin: 0.5rem 0 0.8rem 0 !important;
-}
-
-.rc-young-side {
-    padding: 1rem !important;
-    margin: 0.8rem 0 0.9rem 0 !important;
-}
-
-.rc-young-simple,
-.rc-young-warning {
-    margin-top: 0.65rem !important;
-    padding: 0.8rem !important;
-}
-
-.main h3 {
-    margin-bottom: 0.45rem !important;
-}
-
-hr,
-.rc-divider {
-    margin: 0.55rem 0 !important;
-}
-
-div[data-testid="stVerticalBlock"] {
-    gap: 0.55rem !important;
-}
-
-[data-testid="metric-container"] {
-    padding: 8px 10px !important;
 }
 
 </style>
@@ -2325,8 +2289,6 @@ def payment_to_goal(goal, a0, months, annual_rate):
     return max(0.0, (goal - a0 * A) * r / (A - 1))
 
 def ui_poupanca():
-    st.markdown("<div class='section-card section-tight'>", unsafe_allow_html=True)
-
     st.markdown(f"### {COPY['save_title']}")
     st.caption(COPY["save_body"])
 

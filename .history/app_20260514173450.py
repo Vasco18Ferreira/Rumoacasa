@@ -895,6 +895,12 @@ html, body, .stApp {
    FIX: remover barras estranhas
 =========================== */
 
+div:has(> .rc-sim-card) + div {
+  display: none;
+}
+
+div>", unsafe_allow_html=True)
+
 /* ===========================
    RESULTADOS DOS CENÁRIOS
 =========================== */
@@ -1089,48 +1095,6 @@ button[title="Fork"] {
   .rc-young-grid{
     grid-template-columns: 1fr;
   }
-}
-
-/* ===========================
-   ESPAÇAMENTO MAIS COMPACTO
-=========================== */
-
-.main .block-container {
-    padding-top: 1rem !important;
-    padding-bottom: 1.5rem !important;
-}
-
-.section-card {
-    padding: 1.1rem 1.3rem !important;
-    margin: 0.5rem 0 0.8rem 0 !important;
-}
-
-.rc-young-side {
-    padding: 1rem !important;
-    margin: 0.8rem 0 0.9rem 0 !important;
-}
-
-.rc-young-simple,
-.rc-young-warning {
-    margin-top: 0.65rem !important;
-    padding: 0.8rem !important;
-}
-
-.main h3 {
-    margin-bottom: 0.45rem !important;
-}
-
-hr,
-.rc-divider {
-    margin: 0.55rem 0 !important;
-}
-
-div[data-testid="stVerticalBlock"] {
-    gap: 0.55rem !important;
-}
-
-[data-testid="metric-container"] {
-    padding: 8px 10px !important;
 }
 
 </style>
@@ -2067,7 +2031,7 @@ def ui_side_note_jovens():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ================================
-# Comparar (compra vs construção)
+# Comparar (apenas aquisição)
 # ================================
 def ui_comparar():
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -2084,56 +2048,30 @@ def ui_comparar():
     mensal_buy = float(st.session_state.get("mensal_compra", 0.0) or 0.0)
     mensal_build = float(st.session_state.get("mensal_build", 0.0) or 0.0)
 
-    tem_compra = mensal_buy > 0
-    tem_construir = mensal_build > 0
-
-    if not tem_compra and not tem_construir:
+    if mensal_buy <= 0 and mensal_build <= 0:
         st.info("Preenche **Comprar** e/ou **Construir** para veres a comparação.")
         st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    # Caso 1: compra e construção preenchidos
-    if tem_compra and tem_construir:
+    if mensal_buy > 0 and mensal_build > 0:
         ui_wow_result(
             upfront_buy,
             mensal_buy,
             upfront_build,
             mensal_build,
         )
-
-    # Caso 2: só compra preenchida
-    elif tem_compra:
-        st.markdown("#### 🏡 Compra")
-
+    else:
         col1, col2 = st.columns(2)
 
         with col1:
-            st.metric("À cabeça", euro0(upfront_buy))
+            st.metric("À cabeça (comprar)", euro0(upfront_buy))
+            st.metric("Mensal (comprar)", euro0(mensal_buy))
 
         with col2:
-            st.metric("Mensal estimado", euro0(mensal_buy))
+            st.metric("À cabeça (construir)", euro0(upfront_build))
+            st.metric("Mensal (construir)", euro0(mensal_build))
 
-        st.info(
-            "Ainda só tens o cenário de **compra** preenchido. "
-            "Completa **Construir** para comparar lado a lado."
-        )
-
-    # Caso 3: só construção preenchida
-    elif tem_construir:
-        st.markdown("#### 🏗️ Construir")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.metric("À cabeça", euro0(upfront_build))
-
-        with col2:
-            st.metric("Mensal estimado", euro0(mensal_build))
-
-        st.info(
-            "Ainda só tens o cenário de **construção** preenchido. "
-            "Completa **Comprar** para comparar lado a lado."
-        )
+        st.info("Só uma das opções está preenchida — completa a outra para comparar lado a lado.")
 
     st.markdown("### 🚀 Próximo passo")
 
@@ -2152,6 +2090,7 @@ def ui_comparar():
         st.success("Em breve vais poder falar com um parceiro certificado 👍")
 
     st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ================================
 # Conforto mensal (guia)
@@ -2325,8 +2264,6 @@ def payment_to_goal(goal, a0, months, annual_rate):
     return max(0.0, (goal - a0 * A) * r / (A - 1))
 
 def ui_poupanca():
-    st.markdown("<div class='section-card section-tight'>", unsafe_allow_html=True)
-
     st.markdown(f"### {COPY['save_title']}")
     st.caption(COPY["save_body"])
 
@@ -2548,6 +2485,8 @@ ui_resultados_cenarios()
 
 # Side note / explicação IMT Jovem
 ui_side_note_jovens()
+
+st.divider()
 
 # Comparação final
 ui_comparar()
