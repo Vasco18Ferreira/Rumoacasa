@@ -1845,7 +1845,7 @@ def ui_resultados_cenarios():
             escritura_regs = float(st.session_state.get("escritura_buy", 0.0))
             custos_extra = float(st.session_state.get("extras_buy", 0.0))
 
-            st.html(
+            st.markdown(
                 f"""
                 <div class='rc-scenario-card buy'>
                     <div class='rc-scenario-badge buy'>💸 Compra</div>
@@ -1877,7 +1877,7 @@ def ui_resultados_cenarios():
             iva_construcao = float(st.session_state.get("iva_build", 0.0))
             imprevistos = float(st.session_state.get("imprevistos_build", 0.0))
 
-            st.html(
+            st.markdown(
                 f"""
                 <div class='rc-scenario-card build'>
                     <div class='rc-scenario-badge build'>🏗️ Construção</div>
