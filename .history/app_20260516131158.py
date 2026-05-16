@@ -1831,10 +1831,7 @@ def ui_resultados_cenarios():
     if not buy_done and not build_done:
         return
 
-    st.markdown(
-        "<div class='rc-scenarios-title'>📊 Os teus cenários</div>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("<div class='rc-scenarios-title'>📊 Os teus cenários</div>", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
 
@@ -1850,24 +1847,25 @@ def ui_resultados_cenarios():
 
             st.html(
                 f"""
-                <div class="rc-scenario-card buy">
-                    <div class="rc-scenario-badge buy">💸 Compra</div>
-                    <div class="rc-scenario-title">Cenário de compra</div>
+                <div class='rc-scenario-card buy'>
+                    <div class='rc-scenario-badge buy'>💸 Compra</div>
+                    <div class='rc-scenario-title'>Cenário de compra</div>
 
-                    <div class="rc-scenario-metric-label">Entrada necessária</div>
-                    <div class="rc-scenario-metric-value">{euro0(upfront_buy)}</div>
+                    <div class='rc-scenario-metric-label'>Entrada necessária</div>
+                    <div class='rc-scenario-metric-value'>{euro0(upfront_buy)}</div>
 
-                    <div class="rc-scenario-metric-label">Prestação (crédito)</div>
-                    <div class="rc-scenario-metric-value">{euro0(prestacao)}</div>
+                    <div class='rc-scenario-metric-label'>Prestação (crédito)</div>
+                    <div class='rc-scenario-metric-value'>{euro0(prestacao)}</div>
 
-                    <div class="rc-scenario-metric-label">Mensal total</div>
-                    <div class="rc-scenario-metric-value">{euro0(mensal_compra)}</div>
+                    <div class='rc-scenario-metric-label'>Mensal total</div>
+                    <div class='rc-scenario-metric-value'>{euro0(mensal_compra)}</div>
 
-                    <div class="rc-scenario-note">
+                    <div class='rc-scenario-note'>
                         IMT: {euro0(imt)} · Selo: {euro0(selo)} · Escritura/registos: {euro0(escritura_regs)} · Extras: {euro0(custos_extra)}
                     </div>
                 </div>
-                """
+                """,
+                unsafe_allow_html=True,
             )
 
     with col2:
@@ -1881,24 +1879,25 @@ def ui_resultados_cenarios():
 
             st.html(
                 f"""
-                <div class="rc-scenario-card build">
-                    <div class="rc-scenario-badge build">🏗️ Construção</div>
-                    <div class="rc-scenario-title">Cenário de construção</div>
+                <div class='rc-scenario-card build'>
+                    <div class='rc-scenario-badge build'>🏗️ Construção</div>
+                    <div class='rc-scenario-title'>Cenário de construção</div>
 
-                    <div class="rc-scenario-metric-label">Total do projeto</div>
-                    <div class="rc-scenario-metric-value">{euro0(total_construcao)}</div>
+                    <div class='rc-scenario-metric-label'>Total do projeto</div>
+                    <div class='rc-scenario-metric-value'>{euro0(total_construcao)}</div>
 
-                    <div class="rc-scenario-metric-label">Entrada necessária</div>
-                    <div class="rc-scenario-metric-value">{euro0(entrada_build)}</div>
+                    <div class='rc-scenario-metric-label'>Entrada necessária</div>
+                    <div class='rc-scenario-metric-value'>{euro0(entrada_build)}</div>
 
-                    <div class="rc-scenario-metric-label">Mensal total</div>
-                    <div class="rc-scenario-metric-value">{euro0(mensal_build)}</div>
+                    <div class='rc-scenario-metric-label'>Mensal total</div>
+                    <div class='rc-scenario-metric-value'>{euro0(mensal_build)}</div>
 
-                    <div class="rc-scenario-note">
+                    <div class='rc-scenario-note'>
                         Base: {euro0(custo_construcao_base)} · IVA: {euro0(iva_construcao)} · Imprevistos: {euro0(imprevistos)} · Mensal total: {euro0(mensal_build)}
                     </div>
                 </div>
-                """
+                """,
+                unsafe_allow_html=True,
             )
 # ================================
 # WOW RESULT
