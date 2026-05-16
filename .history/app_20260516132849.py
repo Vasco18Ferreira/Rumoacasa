@@ -2573,9 +2573,7 @@ ui_sensibilidade()     # 📉 risco financeiro
 
 ui_poupanca()          # 🎯 plano de ação
 ui_leads()
-
-if SHOW_PARTNERS:
-    ui_parceiros()
+ui_parceiros()
 
 ui_sticky_summary(sticky_placeholder)
 

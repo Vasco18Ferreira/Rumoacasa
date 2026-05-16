@@ -134,12 +134,9 @@ TIPS = {
 
 }
 
-# ---------------------------------------------------
+# -------------------------------------------------
 # CONFIG DA PÁGINA
-# ---------------------------------------------------
-
-SHOW_PARTNERS = False
-
+# -------------------------------------------------
 st.set_page_config(
     page_title=COPY["app_title"],
     page_icon="🏡",
@@ -2573,9 +2570,7 @@ ui_sensibilidade()     # 📉 risco financeiro
 
 ui_poupanca()          # 🎯 plano de ação
 ui_leads()
-
-if SHOW_PARTNERS:
-    ui_parceiros()
+ui_parceiros()
 
 ui_sticky_summary(sticky_placeholder)
 
