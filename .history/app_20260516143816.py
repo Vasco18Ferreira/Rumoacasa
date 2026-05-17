@@ -7,23 +7,6 @@ import pandas as pd
 import altair as alt
 import textwrap
 
-GA_ID = "G-0TD1R6EB3W"
-
-st.markdown(
-    f"""
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){{dataLayer.push(arguments);}}
-      gtag('js', new Date());
-
-      gtag('config', '{GA_ID}');
-    </script>
-    """,
-    unsafe_allow_html=True,
-)
-
 # ================================
 # COPY PREMIUM (PT) — RumoCasa
 # ================================
