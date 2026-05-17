@@ -148,6 +148,23 @@ st.set_page_config(
     layout="centered",
 )
 
+GA_ID = "G-0TD1R6EB3W"
+
+st.markdown(
+    f"""
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{dataLayer.push(arguments);}}
+      gtag('js', new Date());
+
+      gtag('config', '{GA_ID}');
+    </script>
+    """,
+    unsafe_allow_html=True,
+)
+
 # -------------------------------------------------
 # BOOT RESET — garante app limpa ao abrir
 # -------------------------------------------------
