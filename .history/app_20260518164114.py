@@ -1186,17 +1186,6 @@ with col2:
 
     st.image(logo, width=420)
 
-    st.markdown(
-    """
-    <style>
-    .element-container:has(img) {
-        margin-bottom: -60px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
     st.markdown("</div>", unsafe_allow_html=True)
 
 hero_html = f"""<div class="rc-hero rc-fade-in">
