@@ -1174,19 +1174,7 @@ div[data-testid="stVerticalBlock"] {
     unsafe_allow_html=True,
 )
 
-col1, col2, col3 = st.columns([1,2,1])
-
-with col2:
-    st.markdown(
-        """
-        <div style="display:flex; justify-content:center;">
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.image(logo, width=420)
-
-    st.markdown("</div>", unsafe_allow_html=True)
+st.image(logo, width=340)
 
 hero_html = f"""<div class="rc-hero rc-fade-in">
 <div class="rc-hero-inner">
