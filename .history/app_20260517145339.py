@@ -1,5 +1,4 @@
 import streamlit as st
-from PIL import Image
 from datetime import date
 import math
 import io
@@ -145,12 +144,10 @@ SHOW_PARTNERS = False
 SHOW_LEADS = False
 
 st.set_page_config(
-    page_title="RumoCasa",
-    page_icon="assets/favicon.png",
-    layout="wide",
+    page_title=COPY["app_title"],
+    page_icon="🏡",
+    layout="centered",
 )
-
-logo = Image.open("assets/logo_rumocasa.png")
 
 components.html(
     """
@@ -1174,10 +1171,10 @@ div[data-testid="stVerticalBlock"] {
     unsafe_allow_html=True,
 )
 
-st.image(logo, width=340)
-
 hero_html = f"""<div class="rc-hero rc-fade-in">
 <div class="rc-hero-inner">
+
+<div class="rc-hero-badge">🏡 RumoCasa</div>
 
 <div class="rc-hero-brand">O teu planeador habitacional</div>
 

@@ -150,8 +150,6 @@ st.set_page_config(
     layout="wide",
 )
 
-logo = Image.open("assets/logo_rumocasa.png")
-
 components.html(
     """
     <script type="text/javascript">
@@ -1174,10 +1172,10 @@ div[data-testid="stVerticalBlock"] {
     unsafe_allow_html=True,
 )
 
-st.image(logo, width=340)
-
 hero_html = f"""<div class="rc-hero rc-fade-in">
 <div class="rc-hero-inner">
+
+<div class="rc-hero-badge">🏡 RumoCasa</div>
 
 <div class="rc-hero-brand">O teu planeador habitacional</div>
 
